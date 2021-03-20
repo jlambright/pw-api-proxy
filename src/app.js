@@ -16,6 +16,7 @@ const services = require('./services');
 const appHooks = require('./app.hooks');
 const channels = require('./channels');
 
+import {WebflowClient} from "./webflowclient"
 
 const app = express(feathers());
 
@@ -49,5 +50,6 @@ app.use(express.notFound());
 app.use(express.errorHandler({logger}));
 
 app.hooks(appHooks);
+logger.debug(WebflowClient.site())
 
 module.exports = app;
