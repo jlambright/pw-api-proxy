@@ -4,11 +4,12 @@
 
 ## About
 
-This project uses [Feathers](http://feathersjs.com). An open source web framework for building modern real-time
+* This project uses [Feathers](http://feathersjs.com). An open source web framework for building modern real-time
 applications. 
 
-It also utilizes Google App Engine, running Node JS 14.
+* Hosted on Google App Engine, running Node JS 14.
 
+* CI/CD via GitHub Actions.
 ## Getting Started
 
 Getting up and running is as easy as 1, 2, 3.
