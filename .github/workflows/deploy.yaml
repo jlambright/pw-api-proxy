@@ -1,0 +1,30 @@
+name: Deploy to Google App Engine
+on:
+  push:
+    branches:
+      - main
+jobs:
+  build:
+    name: GAE Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Add ENV Variables to app.yaml
+        uses: ikuanyshbekov/app-yaml-env-compiler@v1.0
+        env:
+          WF_API_KEY: ${{ secrets.WF_API_KEY }}
+          WF_CHAMPS_ID: ${{ secrets.WF_CHAMPS_ID }}
+          WF_MATCHES_ID: ${{ secrets.WF_MATCHES_ID }}
+          WF_ROUNDS_ID: ${{ secrets.WF_ROUNDS_ID }}
+          WF_SITE_ID: ${{ secrets.WF_SITE_ID }}
+          WF_STORIES_ID: ${{ secrets.WF_STORIES_ID }}
+      - name: Setup Cloud SDK
+        uses: google-github-actions/setup-gcloud@v0.2.0
+        with:
+          project_id: ${{ env.GCP_PROJECT }}
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+      - name: Deploy to App Engine
+        uses: google-github-actions/deploy-appengine@main
+        with:
+          credentials: ${{ secrets.GCP_SA_KEY }}

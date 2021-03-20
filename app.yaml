@@ -1,3 +1,10 @@
 # [START app_yaml]
 runtime: nodejs14
+env_variables:
+  WF_API_KEY: $WF_API_KEY
+  WF_CHAMPS_ID: $WF_CHAMPS_ID
+  WF_MATCHES_ID: $WF_MATCHES_ID
+  WF_ROUNDS_ID: $WF_ROUNDS_ID
+  WF_SITE_ID: $WF_SITE_ID
+  WF_STORIES_ID: $WF_STORIES_ID
 # [END app_yaml]
