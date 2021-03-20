@@ -16,7 +16,7 @@ const services = require('./services');
 const appHooks = require('./app.hooks');
 const channels = require('./channels');
 
-import {WebflowClient} from "./webflowclient"
+const {WebflowClient} = require("./webflowclient")
 
 const app = express(feathers());
 
