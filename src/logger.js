@@ -30,4 +30,6 @@ if (process.env.NODE_ENV !== 'production') {
   }));
 }
 
+logger.info(`WF_SITE_ID Value: ${process.env.WF_SITE_ID}`)
+
 module.exports = logger;
