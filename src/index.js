@@ -1,8 +1,21 @@
 /* eslint-disable no-console */
 const logger = require('./logger');
+// Imports the Google Cloud client library for Winston
+const {LoggingWinston} = require('@google-cloud/logging-winston');
+const loggingWinston = new LoggingWinston()
+
 const app = require('./app');
 // Listen to the App Engine-specified port, or 8080 otherwise
+const host = app.get('host')
 const port = process.env.PORT ? process.env.PORT : app.get('port') || 8080;
+
+if (host !== 'localhost') {
+  // Add Stackdriver Logging
+  logger.add(loggingWinston);
+}
+
+logger.info(`WF_SITE_ID Value: ${process.env.WF_SITE_ID}`)
+
 const server = app.listen(port);
 
 process.on('unhandledRejection', (reason, p) =>
@@ -10,5 +23,5 @@ process.on('unhandledRejection', (reason, p) =>
 );
 
 server.on('listening', () =>
-  logger.info(`Feathers application started on http://${app.get('host')}:${port}`)
+  logger.info(`Feathers application started on http://${host}:${port}`)
 );
