@@ -9,7 +9,7 @@ const app = require('./app');
 const host = app.get('host')
 const port = app.get('port') || 8080;
 
-if (host !== 'localhost') {
+if (process.env.GAE_APPLICATION) {
   // Add Stackdriver Logging
   logger.add(loggingWinston);
 }
