@@ -1,4 +1,7 @@
 const {createLogger, format, transports} = require('winston');
+// Imports the Google Cloud client library for Winston
+const {LoggingWinston} = require('@google-cloud/logging-winston');
+const loggingWinston = new LoggingWinston()
 
 // Configure the Winston logger. For the complete documentation see https://github.com/winstonjs/winston
 const logger = createLogger({
@@ -12,6 +15,8 @@ const logger = createLogger({
     //
     new transports.File({ filename: 'error.log', level: 'error' }),
     new transports.File({ filename: 'combined.log' }),
+    // Add Stackdriver Logging
+    loggingWinston
   ],
 });
 
