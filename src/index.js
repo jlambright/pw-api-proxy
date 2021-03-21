@@ -7,7 +7,7 @@ const loggingWinston = new LoggingWinston()
 const app = require('./app');
 // Listen to the App Engine-specified port, or 8080 otherwise
 const host = app.get('host')
-const port = process.env.PORT ? process.env.PORT : app.get('port') || 8080;
+const port = app.get('port') || 8080;
 
 if (host !== 'localhost') {
   // Add Stackdriver Logging

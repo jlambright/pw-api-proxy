@@ -15,6 +15,8 @@ const logger = createLogger({
   ],
 });
 
+console.log(process.env.NODE_ENV)
+
 //
 // If we're not in production then log to the `console` with the format:
 // `${info.level}: ${info.message} JSON.stringify({ ...rest }) `

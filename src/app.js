@@ -20,6 +20,7 @@ const app = express(feathers());
 
 // Load app configuration
 app.configure(configuration());
+if (process.env.PORT) app.set('port', process.env.PORT)
 // Enable security, CORS, compression, favicon and body parsing
 app.use(helmet({
   contentSecurityPolicy: false
