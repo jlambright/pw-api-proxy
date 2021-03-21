@@ -15,7 +15,10 @@ const logger = createLogger({
   ],
 });
 
-console.log(process.env.NODE_ENV)
+if (process.env.GAE_APPLICATION) {
+  // Add Stackdriver Logging
+  logger.add(loggingWinston);
+}
 
 //
 // If we're not in production then log to the `console` with the format:

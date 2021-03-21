@@ -9,11 +9,6 @@ const app = require('./app');
 const host = app.get('host')
 const port = app.get('port') || 8080;
 
-if (process.env.GAE_APPLICATION) {
-  // Add Stackdriver Logging
-  logger.add(loggingWinston);
-}
-
 logger.info(`WF_SITE_ID Value: ${process.env.WF_SITE_ID}`)
 
 const server = app.listen(port);
