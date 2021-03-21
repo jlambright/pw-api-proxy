@@ -50,6 +50,6 @@ app.use(express.notFound());
 app.use(express.errorHandler({logger}));
 
 app.hooks(appHooks);
-logger.debug(WebflowClient.site())
+logger.debug(process.env.WF_SITE_ID)
 
 module.exports = app;

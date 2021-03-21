@@ -22,6 +22,7 @@
   },
   "scripts": {
     "deploy": "gcloud app deploy",
+    "env": "printev > .env",
     "test": "yarn run lint && yarn run mocha",
     "lint": "eslint src/. test/. --config .eslintrc.json --fix",
     "dev": "nodemon src/",

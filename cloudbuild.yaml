@@ -1,0 +1,17 @@
+steps:
+  - name: node:10.15.1
+    entrypoint: yarn
+    args: ["install"]
+  - name: node:10.15.1
+    entrypoint: yarn
+    args: ["run", "env"]
+    env:
+      - 'WF_API_KEY=$_WF_API_KEY'
+      - 'WF_CHAMPS_ID=$_WF_CHAMPS_ID'
+      - 'WF_MATCHES_ID=$_WF_MATCHES_ID'
+      - 'WF_ROUNDS_ID=$_WF_ROUNDS_ID'
+      - 'WF_SITE_ID=$_WF_SITE_ID'
+      - 'WF_STORIES_ID=$_WF_STORIES_ID'
+  - name: "gcr.io/cloud-builders/gcloud"
+    args: ["app", "deploy"]
+timeout: "1600s"
