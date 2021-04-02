@@ -13,6 +13,7 @@ jobs:
       - name: Add ENV Variables to app.yaml
         uses: ikuanyshbekov/app-yaml-env-compiler@v1.0
         env:
+          FIREBASE_KEY: ${{ secrets.FIREBASE_KEY }}
           WF_API_KEY: ${{ secrets.WF_API_KEY }}
           WF_CHAMPS_ID: ${{ secrets.WF_CHAMPS_ID }}
           WF_MATCHES_ID: ${{ secrets.WF_MATCHES_ID }}

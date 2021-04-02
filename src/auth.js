@@ -1,6 +1,12 @@
+const firebase = require('firebase/app');
 const admin = require('firebase-admin');
 
 const logger = require("./logger");
+
+const credential = admin.credential.cert(JSON.parse(process.env.FIREBASE_KEY));
+
+admin.initializeApp(credential);
+firebase.initializeApp(credential);
 
 module.exports.getUserFromToken = (req, res, next) => {
     const authHeader = req.header("Authorization");
