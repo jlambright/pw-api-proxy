@@ -1,7 +1,7 @@
 const restify = require("restify");
 const corsMiddleware = require('restify-cors-middleware2')
 
-const {getUserFromToken} = require("./auth");
+const firebaseAuth = require("./auth");
 const {buildRoundMap} = require("./storymap");
 const logger = require("./logger");
 const {MatchupsCollection} = require("./webflowclient")
@@ -35,7 +35,7 @@ const server = restify.createServer({
 
 server.pre(cors.preflight);
 server.use(cors.actual);
-server.use(getUserFromToken);
+server.use(firebaseAuth);
 server.use(restify.plugins.acceptParser(server.acceptable));
 server.use(restify.plugins.queryParser());
 server.use(restify.plugins.bodyParser());

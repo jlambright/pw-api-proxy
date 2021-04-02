@@ -40,6 +40,7 @@
     "firebase-admin": "^9.6.0",
     "restify": "^8.5.1",
     "restify-cors-middleware2": "^2.1.2",
+    "restify-firebase-auth": "^1.0.4",
     "webflow-api": "^0.5.0",
     "winston": "^3.3.3"
   },
