@@ -3,10 +3,16 @@ const admin = require('firebase-admin');
 
 const logger = require("./logger");
 
-const credential = admin.credential.cert(JSON.parse(process.env.FIREBASE_KEY));
+const fbKey = JSON.parse(process.env.FIREBASE_KEY);
 
-admin.initializeApp(credential);
-firebase.initializeApp(credential);
+const credential = admin.credential.cert({
+    projectId: fbKey["project_id"], // I get no error here
+    clientEmail: fbKey["client_email"], // I get no error here
+    privateKey: fbKey["private_key"].replace(/\\n/g, '\n') // NOW THIS WORKS!!!
+});
+
+admin.initializeApp({credential: credential });
+firebase.initializeApp({credential: credential});
 
 module.exports.getUserFromToken = (req, res, next) => {
     const authHeader = req.header("Authorization");
