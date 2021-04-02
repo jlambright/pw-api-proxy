@@ -1,6 +1,7 @@
 # [START app_yaml]
 runtime: nodejs14
 env_variables:
+  FIREBASE_KEY: $FIREBASE_KEY
   WF_API_KEY: $WF_API_KEY
   WF_CHAMPS_ID: $WF_CHAMPS_ID
   WF_MATCHES_ID: $WF_MATCHES_ID

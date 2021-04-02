@@ -1,6 +1,5 @@
 const {createLogger, format, transports} = require('winston');
 const { LoggingWinston } = require("@google-cloud/logging-winston");
-const loggingWinston = new LoggingWinston();
 
 // Configure the Winston logger. For the complete documentation see https://github.com/winstonjs/winston
 const logger = createLogger({
@@ -19,6 +18,7 @@ const logger = createLogger({
 
 if (process.env.GAE_APPLICATION) {
   // Add Stackdriver Logging
+  const loggingWinston = new LoggingWinston();
   logger.add(loggingWinston);
 }
 
