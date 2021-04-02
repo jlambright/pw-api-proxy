@@ -1,5 +1,5 @@
 const restify = require("restify");
-const {corsMiddleware} = require('restify-cors-middleware2')
+const corsMiddleware = require('restify-cors-middleware2')
 
 const {getUserFromToken} = require("./auth");
 const {buildRoundMap} = require("./storymap");
@@ -11,11 +11,20 @@ const cors = corsMiddleware({
     preflightMaxAge: 5, //Optional,
     credentials: true,
     origins: [
-        'https://*.purplewallstories.com',
+        'https://app.purplewallstories.com',
+        'https://dev.purplewallstories.com',
         'https://purple-wall.appspot.com',
-        'https://purple-wall.webflow.io'
+        'https://purple-wall.webflow.io',
+        'https://*.purplewallstories.com',
     ],
-    allowHeaders: ['API-Token', "Authorization", "Content-Type"],
+    allowHeaders: [
+        "Access-Control-Allow-Origin",
+        'API-Token',
+        "Authorization",
+        "Content-Type",
+        "Credentials",
+        "Mode"
+    ],
     exposeHeaders: ['API-Token-Expiry']
 })
 
