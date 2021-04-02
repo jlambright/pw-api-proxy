@@ -1,74 +1,93 @@
-const Webflow = require("webflow-api")
-
+const Webflow = require("webflow-api");
+const logger = require("../logger");
+const { buildRequiredArgError } = require("webflow-api/dist/WebflowError");
 
 class Singleton {
-  _instance = undefined
+  _instance;
 
-  constructor() {
+  constructor(object = undefined) {
     if (!this._instance) {
-      this._instance = this;
+      this._instance = object || this;
     } else return this._instance;
   }
 }
 
-
-class WebflowClient extends Singleton {
-  constructor() {
-    super();
-    this._api = new Webflow({token: process.env.WF_API_KEY});
-    this._siteId = process.env.WF_SITE_ID;
-    return this;
-  }
-
-  collection(c_id, query = {}) {
-    return this._api.collection({collectionId: c_id}, query)
-  }
-
-  collections(query = {}) {
-    return this._api.collections({siteId: this._siteId}, query)
-  }
-
-  site() {
-    return this._api.site({siteId: this._siteId});
-  }
-}
+const WebflowClient = {
+  api: new Webflow({ token: process.env.WF_API_KEY }),
+  siteId: process.env.WF_SITE_ID,
+};
 
 class Collection extends Singleton {
-  _api = new WebflowClient();
-
-  constructor(collection_id) {
+  _cid;
+  constructor() {
     super();
-    this._cid = collection_id;
-    this._collection = this._api.collection(this._cid)
-    return this;
+    this._wf = WebflowClient;
+    try {
+      this._collection = this._wf.api
+        .collection({ collectionId: this._cid })
+        .then((resp) => resp)
+        .catch((e) => logger.error(e));
+    } catch (e) {
+      logger.error(e);
+    }
+  }
+
+  get data() {
+    return this._collection;
+  }
+
+  get id() {
+    return this._cid;
   }
 
   item(itemId, query = {}) {
-    return this._api.item({collectionId: this._cid, itemId: itemId}, query)
+    return this._wf.api.item(
+      { collectionId: this._cid, itemId: itemId },
+      query
+    );
   }
 
   items(query = {}) {
-    return this._api.items(this._cid, query);
+    return this._wf.api.items({ collectionId: this._cid }, query);
   }
 
   createItem(data, query = {}) {
-    return this._api.createItem({collectionId: this._cid, data: data}, query)
+    return this._wf.api.createItem({ collectionId: this._cid, ...data }, query);
   }
 
   updateItem(itemId, data, query = {}) {
-    return this._api.updateItem({collectionId: this._cid, itemId: itemId, data: data}, query)
+    return this._wf.api.updateItem(
+      { collectionId: this._cid, itemId: itemId, ...data },
+      query
+    );
+  }
+
+  updateLiveItem(itemId, data, query = {}) {
+    Object.assign(query, { live: true });
+    return this.updateItem(itemId, data, query);
   }
 
   removeItem(itemId, query = {}) {
-    return this._api.removeItem({collectionId: this._cid, itemId: itemId}, query)
+    return this._wf.api.removeItem(
+      { collectionId: this._cid, itemId: itemId },
+      query
+    );
   }
 
-  patchItem(itemId, data, query = {}) {
-    return this._api.patchItem({collectionId: this._cid, itemId: itemId, data: data}, query)
+  patchItem(itemId, fields, query = {}) {
+    return this._wf.api.patchItem(
+      { collectionId: this._cid, itemId: itemId, ...fields },
+      query
+    );
+  }
+
+  patchLiveItem(itemId, fields, query = {}) {
+    Object.assign(query, { live: true });
+    return this.patchItem(itemId, fields, query);
   }
 }
 
 module.exports = {
   WebflowClient,
-  Collection
-}
+  Collection,
+};

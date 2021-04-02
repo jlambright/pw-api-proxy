@@ -1,6 +1,6 @@
 const {Collection} = require('./client')
 
-module.exports = class Stories extends Collection {
+module.exports = class StoriesCollection extends Collection {
   _cid = process.env.WF_STORIES_ID_;
 
   constructor() {

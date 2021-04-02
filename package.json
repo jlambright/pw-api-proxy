@@ -23,11 +23,9 @@
   "scripts": {
     "deploy": "gcloud app deploy",
     "env": "printev > .env",
-    "test": "yarn run lint && yarn run mocha",
     "lint": "eslint src/. test/. --config .eslintrc.json --fix",
     "dev": "nodemon src/",
-    "start": "node src/",
-    "mocha": "mocha test/ --recursive --exit"
+    "start": "node src/"
   },
   "standard": {
     "env": [
@@ -36,25 +34,18 @@
     "ignore": []
   },
   "dependencies": {
-    "@feathersjs/configuration": "^4.5.11",
-    "@feathersjs/errors": "^4.5.11",
-    "@feathersjs/express": "^4.5.11",
-    "@feathersjs/feathers": "^4.5.11",
-    "@feathersjs/socketio": "^4.5.11",
-    "@feathersjs/transport-commons": "^4.5.11",
+    "@google-cloud/datastore": "^6.3.1",
     "@google-cloud/logging-winston": "^4.0.4",
-    "compression": "^1.7.4",
-    "cors": "^2.8.5",
-    "helmet": "^4.3.1",
-    "serve-favicon": "^2.5.0",
+    "firebase": "^8.3.1",
+    "firebase-admin": "^9.6.0",
+    "restify": "^8.5.1",
+    "restify-cors-middleware": "^1.1.1",
     "webflow-api": "^0.5.0",
     "winston": "^3.3.3"
   },
   "devDependencies": {
-    "axios": "^0.21.1",
     "eslint": "^7.17.0",
-    "mocha": "^8.2.1",
-    "nodemon": "^2.0.6"
+    "nodemon": "^2.0.7"
   },
   "license": "MIT"
 }

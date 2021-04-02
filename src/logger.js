@@ -1,4 +1,6 @@
 const {createLogger, format, transports} = require('winston');
+const { LoggingWinston } = require("@google-cloud/logging-winston");
+const loggingWinston = new LoggingWinston();
 
 // Configure the Winston logger. For the complete documentation see https://github.com/winstonjs/winston
 const logger = createLogger({
