@@ -1,8 +1,9 @@
 const restify = require("restify");
 const corsMiddleware = require('restify-cors-middleware')
 
-const logger = require("./logger");
+const {getUserFromToken} = require("./auth");
 const {buildRoundMap} = require("./storymap");
+const logger = require("./logger");
 const {MatchupsCollection} = require("./webflowclient")
 const matchupsCollection = new MatchupsCollection();
 
@@ -13,7 +14,7 @@ const cors = corsMiddleware({
         'https://purple-wall.appspot.com',
         'https://purple-wall.webflow.io'
     ],
-    allowHeaders: ['API-Token'],
+    allowHeaders: ['API-Token', "Authorization"],
     exposeHeaders: ['API-Token-Expiry']
 })
 
@@ -22,8 +23,9 @@ const server = restify.createServer({
     version: '1.0.0'
 });
 
-server.pre(cors.preflight)
-server.use(cors.actual)
+server.pre(cors.preflight);
+server.use(cors.actual);
+server.use(getUserFromToken);
 server.use(restify.plugins.acceptParser(server.acceptable));
 server.use(restify.plugins.queryParser());
 server.use(restify.plugins.bodyParser());

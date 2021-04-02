@@ -1,4 +1,3 @@
-const firebase = require('firebase/app');
 const admin = require('firebase-admin');
 
 const logger = require("./logger");
@@ -8,15 +7,17 @@ module.exports.getUserFromToken = (req, res, next) => {
     if (!authHeader) {
         res.send(401);
         return false;
-    }
-    try {
+    } else {
         const authToken = authHeader.replace('Bearer ', '');
-        const decodedToken = await admin.auth().verifyIdToken(authToken);
-        const user = await admin.auth().getUser(decodedToken.sub);
-        req.set('user', user);
-        return next();
-    } catch (e) {
-        res.send(401);
-        return false;
+        return admin.auth().verifyIdToken(authToken)
+            .then((decodedToken) => admin.auth().getUser(decodedToken.sub)
+                .then((user) => {
+                    req.set("user", user);
+                    return next();
+                })).catch((e) => {
+                    logger.info(e);
+                res.send(401);
+                return false;
+            })
     }
 }
