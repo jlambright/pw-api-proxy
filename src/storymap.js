@@ -42,6 +42,11 @@ module.exports.updateRoundMap = (roundMap) => {
         .then((response) => {
             let state = response[0][0];
             state.matchups = roundMap
+            const entity = {
+                key: key,
+                data: state,
+            };
+
             return datastore.save(entity, (err) => {
                 if (err !== null) {
                     logger.error(key.path);
