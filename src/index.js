@@ -50,6 +50,7 @@ server.post("/vote/:id", (req, res, next) => {
         return buildRoundMap().then((roundMap) => {
             if (storyID in roundMap.stories) {
                 let data = {}
+                logger.info(`Round Map: ${roundMap}`);
                 const storyMatchInfo = roundMap.stories[storyID];
                 const matchUpInfo = storyMatchInfo.matchUp;
                 const matchupID = matchUpInfo.id;
