@@ -6,8 +6,7 @@ const {getToken} = require('restify-firebase-auth');
 const {Admin, FirebaseAuth} = require("./auth");
 const {buildRoundMap, updateRoundMap} = require("./storymap");
 const logger = require("./logger");
-const {MatchupsCollection} = require("./webflowclient")
-const matchupsCollection = new MatchupsCollection();
+const {MatchupsCollection} = require("./webflowclient");
 
 const cors = corsMiddleware({
     preflightMaxAge: 5, //Optional,
