@@ -12,5 +12,7 @@ const credential = admin.credential.cert({
     clientEmail: fbKey["client_email"], // I get no error here
     privateKey: fbKey["private_key"].replace(/\\n/g, '\n') // NOW THIS WORKS!!!
 });
+const Admin = admin.initializeApp({credential: credential });
 
-module.exports = FirebaseAuth({firebase: admin.initializeApp({credential: credential })});
+module.exports.FirebaseAuth = FirebaseAuth({firebase: Admin});
+module.exports.Admin = Admin;

@@ -3,7 +3,7 @@ const errors = require("restify-errors");
 const corsMiddleware = require('restify-cors-middleware2')
 const {getToken} = require('restify-firebase-auth');
 
-const firebaseAuth = require("./auth");
+const {Admin, FirebaseAuth} = require("./auth");
 const {buildRoundMap, updateRoundMap} = require("./storymap");
 const logger = require("./logger");
 const {MatchupsCollection} = require("./webflowclient")
@@ -37,7 +37,7 @@ const server = restify.createServer({
 
 server.pre(cors.preflight);
 server.use(cors.actual);
-server.use(firebaseAuth);
+server.use(FirebaseAuth);
 server.use(restify.plugins.acceptParser(server.acceptable));
 server.use(restify.plugins.queryParser());
 server.use(restify.plugins.bodyParser());
@@ -45,7 +45,7 @@ server.use(restify.plugins.bodyParser());
 server.post("/vote/:id", (req, res, next) => {
     const authorization = req.header('Authorization');
     const storyID = req.params.id;
-    return firebaseAuth.firebase.verifyIdToken(getToken(authorization)).then((decodedToken) => {
+    return Admin.verifyIdToken(getToken(authorization)).then((decodedToken) => {
         return buildRoundMap().then((roundMap) => {
             const uid = decodedToken.uid;
             if (storyID in roundMap.stories) {
