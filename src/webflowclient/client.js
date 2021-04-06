@@ -1,6 +1,4 @@
 const Webflow = require("webflow-api");
-const logger = require("../logger");
-const { buildRequiredArgError } = require("webflow-api/dist/WebflowError");
 
 class Singleton {
   _instance;
