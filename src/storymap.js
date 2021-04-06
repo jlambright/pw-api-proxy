@@ -24,7 +24,8 @@ class RoundMap {
             storyArray.forEach(storyID => {
                 this.stories[storyID] = {
                     matchUp: matchupObj.id,
-                    slot: this.matchups[matchupObj.id][storyID]
+                    slot: this.matchups[matchupObj.id][storyID],
+                    voters: voters,
                 }
             });
         });
