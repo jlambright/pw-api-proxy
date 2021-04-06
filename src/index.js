@@ -51,15 +51,15 @@ server.post("/vote/:id", (req, res, next) => {
             if (storyID in roundMap.stories) {
                 let data = {}
                 const storyMatchInfo = roundMap.stories[storyID];
-                logger.debug(storyMatchInfo);
+                logger.debug(storyMatchInfo.toString());
                 const matchUpInfo = storyMatchInfo.matchUp;
                 const matchupID = matchUpInfo.id;
-                logger.info(`Matchup ID: ${matchupID}`);
+                logger.debug(`Matchup ID: ${matchupID}`);
                 let voters = matchUpInfo.hasOwnProperty("voters")? matchUpInfo.voters : []
                 const slot = storyMatchInfo.slot;
 
                 return MatchupsCollection.item(matchupID).then((matchUpObj) => {
-                    logger.info("Getting Matchup Object");
+                    logger.debug("Getting Matchup Object");
                     data[`${slot}-votes`] = ++matchUpObj[`${slot}-votes`]
                     voters = matchUpObj.hasOwnProperty("voters")? JSON.parse(matchUpObj.voters) : voters;
 
