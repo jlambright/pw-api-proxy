@@ -31,8 +31,8 @@ class Collection extends Singleton {
 
   item(itemId, query = {}) {
     return WebflowClient.api.item(
-      { collectionId: this._cid, itemId: itemId },
-      query
+        { collectionId: this._cid, itemId: itemId },
+        query
     );
   }
 
@@ -46,8 +46,8 @@ class Collection extends Singleton {
 
   updateItem(itemId, data, query = {}) {
     return WebflowClient.api.updateItem(
-      { collectionId: this._cid, itemId: itemId, ...data },
-      query
+        { collectionId: this._cid, itemId: itemId, ...data },
+        query
     );
   }
 
@@ -58,15 +58,15 @@ class Collection extends Singleton {
 
   removeItem(itemId, query = {}) {
     return WebflowClient.api.removeItem(
-      { collectionId: this._cid, itemId: itemId },
-      query
+        { collectionId: this._cid, itemId: itemId },
+        query
     );
   }
 
   patchItem(itemId, fields, query = {}) {
     return WebflowClient.api.patchItem(
-      { collectionId: this._cid, itemId: itemId, ...fields },
-      query
+        { collectionId: this._cid, itemId: itemId, ...fields },
+        query
     );
   }
 
@@ -79,4 +79,7 @@ class Collection extends Singleton {
 module.exports = {
   WebflowClient,
   Collection,
+  MatchupsCollection: new Collection(process.env.WF_MATCHES_ID),
+  RoundsCollection: new Collection(process.env.WF_ROUNDS_ID),
+  StoriesCollection: new Collection(process.env.WF_STORIES_ID)
 };
