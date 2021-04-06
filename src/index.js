@@ -46,8 +46,8 @@ server.post("/vote/:id", (req, res, next) => {
     const authorization = req.header('Authorization');
     const storyID = req.params.id;
     return Admin.auth().verifyIdToken(getToken(authorization)).then((decodedToken) => {
+        const uid = decodedToken.uid;
         return buildRoundMap().then((roundMap) => {
-            const uid = decodedToken.uid;
             if (storyID in roundMap.stories) {
                 let data = {}
                 const storyMatchInfo = roundMap.stories[storyID];
@@ -69,13 +69,12 @@ server.post("/vote/:id", (req, res, next) => {
                         roundMap[matchupID].voters = voters;
                         roundMap[storyID].voters = voters;
 
-                        updateRoundMap(roundMap).catch((reason) => {
-                            if (reason !== null) logger.error(reason);
-                        });
                         return matchupsCollection.patchLiveItem(matchupID, {fields: data})
                             .then((resp) => {
                                 return res.send(resp);
-                            }).catch((reason) => {
+                            }).then(() => updateRoundMap(roundMap)).catch((reason) => {
+                            if (reason !== null) logger.error(reason);
+                        }).catch((reason) => {
                             if (reason !== null) logger.error(reason);
                         });
                     }
