@@ -72,7 +72,7 @@ server.post("/vote/:id", (req, res, next) => {
                         updateRoundMap(roundMap).catch((reason) => {
                             if (reason !== null) logger.error(reason);
                         });
-                        matchupsCollection.patchLiveItem(matchupID, {fields: data})
+                        return matchupsCollection.patchLiveItem(matchupID, {fields: data})
                             .then((resp) => {
                                 return res.send(resp);
                             }).catch((reason) => {
