@@ -37,16 +37,16 @@ module.exports.buildRoundMap = () => datastore.runQuery(stateQuery)
   });
 
 module.exports.updateRoundMap = (roundMap) => {
-    const entity = {
-        key: key,
-        data: roundMap,
-    }
-    return datastore.save(entity, (err) => {
-        if (err !== null) {
-            logger.error(key.path);
-            logger.error(key.namespace);
-        }
-    }).then((response) => {
-        return new RoundMap(response[0][0]);
-    })
+
+    return datastore.runQuery(stateQuery)
+        .then((response) => {
+            let state = response[0][0];
+            state.matchups = roundMap
+            return datastore.save(entity, (err) => {
+                if (err !== null) {
+                    logger.error(key.path);
+                    logger.error(key.namespace);
+                }
+            });
+        });
 };

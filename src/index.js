@@ -67,7 +67,9 @@ server.post("/vote/:id", (req, res, next) => {
                     data["voters"] = voters.toString();
                     roundMap.voters = voters;
 
-                    updateRoundMap(roundMap);
+                    updateRoundMap(roundMap).catch((reason) => {
+                        if (reason !== null) logger.error(reason);
+                    });
                     matchupsCollection.patchLiveItem(matchupID, {fields: data})
                         .then((resp) => {
                             return res.send(resp);
