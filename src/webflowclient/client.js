@@ -18,22 +18,13 @@ const WebflowClient = {
 };
 
 class Collection extends Singleton {
-  _cid;
   constructor(collection_id) {
     super();
-    try {
-      this._cid = collection_id;
-      this._collection = WebflowClient.api
-        .collection({ collectionId: this._cid })
-        .then((resp) => resp)
-        .catch((e) => logger.error(e));
-    } catch (e) {
-      logger.error(e);
-    }
+    this._cid = collection_id;
   }
 
   get data() {
-    return this._collection;
+    return WebflowClient.api.collection({ collectionId: this._cid });
   }
 
   get id() {
