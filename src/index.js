@@ -46,20 +46,14 @@ server.post("/vote/:id", (req, res, next) => {
     const storyID = req.params.id;
     return Admin.auth().verifyIdToken(getToken(authorization)).then((decodedToken) => {
         const uid = decodedToken.uid;
-        logger.info(`UID: ${uid} - Story ID: ${storyID}`);
         return buildRoundMap().then((roundMap) => {
             if (storyID in roundMap.stories) {
                 let data = {}
                 const storyMatchInfo = roundMap.stories[storyID];
-                logger.debug(storyMatchInfo.toString());
                 const matchupID = storyMatchInfo.matchID;
                 let voters = storyMatchInfo.hasOwnProperty("voters")? storyMatchInfo.voters : []
-                logger.debug(`Matchup ID: ${matchupID}`);
-
                 const slot = storyMatchInfo.slot;
-
                 return MatchupsCollection.item(matchupID).then((matchUpObj) => {
-                    logger.debug("Getting Matchup Object");
                     data[`${slot}-votes`] = ++matchUpObj[`${slot}-votes`]
                     voters = matchUpObj.hasOwnProperty("voters")? JSON.parse(matchUpObj.voters) : voters;
 
@@ -74,7 +68,7 @@ server.post("/vote/:id", (req, res, next) => {
 
                         return MatchupsCollection.patchLiveItem(matchupID, {fields: data})
                             .then((resp) => {
-                                logger.info("Vote count updated.");
+                                logger.info(`Vote count updated: Story - ${storyID} by UID - ${uid}`);
                                 return res.send(resp);
                             }).then(() => {
                                 return updateRoundMap(roundMap)
