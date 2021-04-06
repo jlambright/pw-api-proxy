@@ -75,11 +75,14 @@ class Collection extends Singleton {
     return this.patchItem(itemId, fields, query);
   }
 }
+const MatchupsCollection = new Collection(process.env.WF_MATCHES_ID);
+const RoundsCollection = new Collection(process.env.WF_ROUNDS_ID);
+const StoriesCollection = new Collection(process.env.WF_STORIES_ID);
 
 module.exports = {
   WebflowClient,
   Collection,
-  MatchupsCollection: new Collection(process.env.WF_MATCHES_ID),
-  RoundsCollection: new Collection(process.env.WF_ROUNDS_ID),
-  StoriesCollection: new Collection(process.env.WF_STORIES_ID)
+  MatchupsCollection,
+  RoundsCollection,
+  StoriesCollection
 };
