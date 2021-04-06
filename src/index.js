@@ -51,12 +51,14 @@ server.post("/vote/:id", (req, res, next) => {
             if (storyID in roundMap.stories) {
                 let data = {}
                 const storyMatchInfo = roundMap.stories[storyID];
+                const matchUpInfo = storyMatchInfo.matchUp;
                 const matchupID = storyMatchInfo.matchUp.id;
+                const matchupVoters = matchUpInfo.hasOwnProperty("voters")? matchUpInfo.voters : []
                 const slot = storyMatchInfo.slot;
 
                 matchupsCollection.item(matchupID).then((matchUpObj) => {
                     data[`${slot}-votes`] = ++matchUpObj[`${slot}-votes`]
-                    const voters = matchUpObj.hasOwnProperty("voters")? JSON.parse(matchUpObj.voters) : [];
+                    const voters = matchUpObj.hasOwnProperty("voters")? matchUpObj.voters : matchupVoters;
 
                     if (voters.includes(uid)) {
                         return res.send(new errors.InvalidContentError());
