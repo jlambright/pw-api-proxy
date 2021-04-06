@@ -58,7 +58,7 @@ server.post("/vote/:id", (req, res, next) => {
                     data[`${slot}-votes`] = ++matchUpObj[`${slot}-votes`]
                     const voters = matchUpObj.hasOwnProperty("voters")? JSON.parse(matchUpObj.voters) : [];
 
-                    if (uid in voters) {
+                    if (voters.includes(uid)) {
                         return res.send(new errors.InvalidContentError());
                     } else {
                         voters.push(uid)
