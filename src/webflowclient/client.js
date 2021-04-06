@@ -21,9 +21,8 @@ class Collection extends Singleton {
   _cid;
   constructor() {
     super();
-    this._wf = WebflowClient;
     try {
-      this._collection = this._wf.api
+      this._collection = WebflowClient.api
         .collection({ collectionId: this._cid })
         .then((resp) => resp)
         .catch((e) => logger.error(e));
@@ -41,22 +40,22 @@ class Collection extends Singleton {
   }
 
   item(itemId, query = {}) {
-    return this._wf.api.item(
+    return WebflowClient.api.item(
       { collectionId: this._cid, itemId: itemId },
       query
     );
   }
 
   items(query = {}) {
-    return this._wf.api.items({ collectionId: this._cid }, query);
+    return WebflowClient.api.items({ collectionId: this._cid }, query);
   }
 
   createItem(data, query = {}) {
-    return this._wf.api.createItem({ collectionId: this._cid, ...data }, query);
+    return WebflowClient.api.createItem({ collectionId: this._cid, ...data }, query);
   }
 
   updateItem(itemId, data, query = {}) {
-    return this._wf.api.updateItem(
+    return WebflowClient.api.updateItem(
       { collectionId: this._cid, itemId: itemId, ...data },
       query
     );
@@ -68,14 +67,14 @@ class Collection extends Singleton {
   }
 
   removeItem(itemId, query = {}) {
-    return this._wf.api.removeItem(
+    return WebflowClient.api.removeItem(
       { collectionId: this._cid, itemId: itemId },
       query
     );
   }
 
   patchItem(itemId, fields, query = {}) {
-    return this._wf.api.patchItem(
+    return WebflowClient.api.patchItem(
       { collectionId: this._cid, itemId: itemId, ...fields },
       query
     );
