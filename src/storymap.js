@@ -35,3 +35,18 @@ module.exports.buildRoundMap = () => datastore.runQuery(stateQuery)
   .then((response) => {
     return new RoundMap(response[0][0]);
   });
+
+module.exports.updateRoundMap = (roundMap) => {
+    const entity = {
+        key: key,
+        data: roundMap,
+    }
+    return datastore.save(entity, (err) => {
+        if (err !== null) {
+            logger.error(key.path);
+            logger.error(key.namespace);
+        }
+    }).then((response) => {
+        return new RoundMap(response[0][0]);
+    })
+};

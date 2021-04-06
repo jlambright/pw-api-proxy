@@ -4,7 +4,7 @@ const corsMiddleware = require('restify-cors-middleware2')
 const {getToken} = require('restify-firebase-auth');
 
 const firebaseAuth = require("./auth");
-const {buildRoundMap} = require("./storymap");
+const {buildRoundMap, updateRoundMap} = require("./storymap");
 const logger = require("./logger");
 const {MatchupsCollection} = require("./webflowclient")
 const matchupsCollection = new MatchupsCollection();
@@ -65,7 +65,9 @@ server.post("/vote/:id", (req, res, next) => {
                     }
 
                     data["voters"] = voters.toString();
+                    roundMap.voters = voters;
 
+                    updateRoundMap(roundMap);
                     matchupsCollection.patchLiveItem(matchupID, {fields: data})
                         .then((resp) => {
                             return res.send(resp);
