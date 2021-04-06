@@ -81,7 +81,7 @@ server.post("/vote/:id", (req, res, next) => {
                     }
                 })
             } else {
-                return res.send
+                return res.send({data: "Story not in not in active round."});
             }
         }).catch((reason) => {
             if (reason !== null) logger.error(reason);
