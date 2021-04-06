@@ -65,7 +65,8 @@ server.post("/vote/:id", (req, res, next) => {
                     }
 
                     data["voters"] = voters.toString();
-                    roundMap.voters = voters;
+                    roundMap[matchupID].voters = voters;
+                    roundMap[storyID].voters = voters;
 
                     updateRoundMap(roundMap).catch((reason) => {
                         if (reason !== null) logger.error(reason);
