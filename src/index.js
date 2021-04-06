@@ -51,7 +51,7 @@ server.post("/vote/:id", (req, res, next) => {
             if (storyID in roundMap.stories) {
                 let data = {}
                 const storyMatchInfo = roundMap.stories[storyID];
-                const matchupID = storyMatchInfo.matchUp;
+                const matchupID = storyMatchInfo.matchUp.id;
                 const slot = storyMatchInfo.slot;
 
                 matchupsCollection.item(matchupID).then((matchUpObj) => {
