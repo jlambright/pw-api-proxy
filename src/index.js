@@ -59,7 +59,7 @@ server.post("/vote/:id", (req, res, next) => {
                     const voters = matchUpObj.hasOwnProperty("voters")? JSON.parse(matchUpObj.voters) : [];
 
                     if (uid in voters) {
-                        return next(new errors.InvalidContentError());
+                        return res.send(new errors.InvalidContentError());
                     } else {
                         voters.push(uid)
                     }
