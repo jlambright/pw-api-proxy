@@ -55,7 +55,7 @@ server.post("/vote/:id", (req, res, next) => {
                 let voters = matchUpInfo.hasOwnProperty("voters")? matchUpInfo.voters : []
                 const slot = storyMatchInfo.slot;
 
-                matchupsCollection.item(matchupID).then((matchUpObj) => {
+                MatchupsCollection.item(matchupID).then((matchUpObj) => {
                     data[`${slot}-votes`] = ++matchUpObj[`${slot}-votes`]
                     voters = matchUpObj.hasOwnProperty("voters")? JSON.parse(matchUpObj.voters) : voters;
 
@@ -68,7 +68,7 @@ server.post("/vote/:id", (req, res, next) => {
                         roundMap[matchupID].voters = voters;
                         roundMap[storyID].voters = voters;
 
-                        return matchupsCollection.patchLiveItem(matchupID, {fields: data})
+                        return MatchupsCollection.patchLiveItem(matchupID, {fields: data})
                             .then((resp) => {
                                 return res.send(resp);
                             }).then(() => updateRoundMap(roundMap)).catch((reason) => {
