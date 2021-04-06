@@ -62,21 +62,21 @@ server.post("/vote/:id", (req, res, next) => {
                         return res.send(new errors.InvalidContentError());
                     } else {
                         voters.push(uid)
+
+                        data["voters"] = voters.toString();
+                        roundMap[matchupID].voters = voters;
+                        roundMap[storyID].voters = voters;
+
+                        updateRoundMap(roundMap).catch((reason) => {
+                            if (reason !== null) logger.error(reason);
+                        });
+                        matchupsCollection.patchLiveItem(matchupID, {fields: data})
+                            .then((resp) => {
+                                return res.send(resp);
+                            }).catch((reason) => {
+                            if (reason !== null) logger.error(reason);
+                        });
                     }
-
-                    data["voters"] = voters.toString();
-                    roundMap[matchupID].voters = voters;
-                    roundMap[storyID].voters = voters;
-
-                    updateRoundMap(roundMap).catch((reason) => {
-                        if (reason !== null) logger.error(reason);
-                    });
-                    matchupsCollection.patchLiveItem(matchupID, {fields: data})
-                        .then((resp) => {
-                            return res.send(resp);
-                        }).catch((reason) => {
-                        if (reason !== null) logger.error(reason);
-                    });
                 })
             } else {
                 return res.send
