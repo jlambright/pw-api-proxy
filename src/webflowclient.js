@@ -30,7 +30,7 @@ class Collection extends Singleton {
   }
 
   item(itemId, query = {}) {
-    if (!itemId) return Promise.reject(buildRequiredArgError('siteId'));
+    if (!itemId) return Promise.reject(buildRequiredArgError('itemId'));
 
     return WebflowClient.get(`/collections/${this._cid}/items/${itemId}`, query).then(
         res => this.responseWrapper.item(res.items[0], this._cid),
