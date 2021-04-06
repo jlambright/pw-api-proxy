@@ -1,5 +1,7 @@
 const restify = require("restify");
+const errors = require("restify-errors");
 const corsMiddleware = require('restify-cors-middleware2')
+const {getToken} = require('restify-firebase-auth');
 
 const firebaseAuth = require("./auth");
 const {buildRoundMap} = require("./storymap");
@@ -41,29 +43,45 @@ server.use(restify.plugins.queryParser());
 server.use(restify.plugins.bodyParser());
 
 server.post("/vote/:id", (req, res, next) => {
+    const authorization = req.header('Authorization');
     const storyID = req.params.id;
-   return buildRoundMap().then((roundMap) => {
-       if (storyID in roundMap.stories) {
-           let data = {}
-           const storyMatchInfo = roundMap.stories[storyID];
-           const matchupID = storyMatchInfo.matchUp;
-           const slot = storyMatchInfo.slot;
+    return firebaseAuth.firebase.admin.verifyIdToken(getToken(authorization)).then((decodedToken) => {
+        return buildRoundMap().then((roundMap) => {
+            const uid = decodedToken.uid;
+            if (storyID in roundMap.stories) {
+                let data = {}
+                const storyMatchInfo = roundMap.stories[storyID];
+                const matchupID = storyMatchInfo.matchUp;
+                const slot = storyMatchInfo.slot;
 
-           matchupsCollection.item(matchupID).then((matchUpObj) => {
-               data[`${slot}-votes`] = ++matchUpObj[`${slot}-votes`]
-               matchupsCollection.patchLiveItem(matchupID, {fields: data})
-                   .then((resp) => {
-                   return res.send(resp);
-               }).catch((reason) => {
-                   if (reason !== null) logger.error(reason);
-               });
-           })
-       } else {
-           return res.send
-       }
-   }).catch((reason) => {
-       if (reason !== null) logger.error(reason);
-   });
+                matchupsCollection.item(matchupID).then((matchUpObj) => {
+                    data[`${slot}-votes`] = ++matchUpObj[`${slot}-votes`]
+                    const voters = matchUpObj.hasOwnProperty("voters")? JSON.parse(matchUpObj.voters) : [];
+
+                    if (uid in voters) {
+                        return next(new errors.InvalidContentError());
+                    } else {
+                        voters.push(uid)
+                    }
+
+                    data["voters"] = voters.toString();
+
+                    matchupsCollection.patchLiveItem(matchupID, {fields: data})
+                        .then((resp) => {
+                            return res.send(resp);
+                        }).catch((reason) => {
+                        if (reason !== null) logger.error(reason);
+                    });
+                })
+            } else {
+                return res.send
+            }
+        }).catch((reason) => {
+            if (reason !== null) logger.error(reason);
+        });
+    }).catch((reason) => {
+        if (reason !== null) logger.error(reason);
+    });
 });
 
 server.get("/round", (req, res, next) => {

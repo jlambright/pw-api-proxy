@@ -13,8 +13,11 @@ class RoundMap {
     constructor(stateObj) {
         const matchupObjArray = stateObj.matchups;
         matchupObjArray.forEach((matchupObj) => {
+            const voters = matchupObj.hasOwnProperty("voters")? JSON.parse(matchupObj.voters) : [];
             const storyArray = [matchupObj["a-story"], matchupObj["b-story"]];
-            this.matchups[matchupObj.id] = {};
+            this.matchups[matchupObj.id] = {
+                voters: voters,
+            };
             this.matchups[matchupObj.id][matchupObj["a-story"]] = "a";
             this.matchups[matchupObj.id][matchupObj["b-story"]] = "b";
 
