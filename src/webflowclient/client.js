@@ -19,9 +19,10 @@ const WebflowClient = {
 
 class Collection extends Singleton {
   _cid;
-  constructor() {
+  constructor(collection_id) {
     super();
     try {
+      this._cid = collection_id;
       this._collection = WebflowClient.api
         .collection({ collectionId: this._cid })
         .then((resp) => resp)
