@@ -45,7 +45,7 @@ server.use(restify.plugins.bodyParser());
 server.post("/vote/:id", (req, res, next) => {
     const authorization = req.header('Authorization');
     const storyID = req.params.id;
-    return Admin.verifyIdToken(getToken(authorization)).then((decodedToken) => {
+    return Admin.auth().verifyIdToken(getToken(authorization)).then((decodedToken) => {
         return buildRoundMap().then((roundMap) => {
             const uid = decodedToken.uid;
             if (storyID in roundMap.stories) {
