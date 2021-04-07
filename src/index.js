@@ -50,7 +50,6 @@ server.post("/vote/:id", (req, res, next) => {
         const uid = decodedToken.uid;
         return buildRoundMap().then((roundMap) => {
             if (storyID in roundMap.stories) {
-                let data = {}
                 const storyMatchInfo = roundMap.stories[storyID];
                 const matchupID = storyMatchInfo.matchID;
                 let voterIDs = storyMatchInfo.hasOwnProperty("voters") ? storyMatchInfo.voters : [];
@@ -64,16 +63,18 @@ server.post("/vote/:id", (req, res, next) => {
                         return res.send({data: {message: "You've already voted for this story."}});
                     } else {
                         voterIDs.push(uid)
-                        data[`${slot}-votes`] = ++matchUpObj[`${slot}-votes`]
-                        data["voters"] = JSON.stringify(voterIDs);
+                        let fields = {
+                            voters: JSON.stringify(voterIDs),
+                        }
+                        fields[`${slot}-votes`] = ++matchUpObj[`${slot}-votes`]
                         roundMap.matchups[matchupID].voters = voterIDs;
                         roundMap.stories[storyID].voters = voterIDs;
 
-                        return MatchupsCollection.patchLiveItem(matchupID, {fields: data})
-                            .then(() => updateRoundMap(roundMap)
+                        return MatchupsCollection.patchLiveItem(matchupID, {fields: fields})
+                            .then((response) => updateRoundMap(roundMap)
                                 .then(() => {
                                     logger.info(`Voter: ${uid}, Story: ${storyID}`);
-                                    return res.send({data: {message: "vote successful"}})
+                                    return res.send({data: {message: "vote successful", response: response}})
                                 })
                                 .catch((reason) => {
                                     if (reason !== null) logger.error(reason);
