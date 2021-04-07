@@ -12,6 +12,7 @@ class RoundMap {
 
     constructor(stateObj) {
         try {
+            logger.log(JSON.stringify(stateObj));
             const matchupObjArray = stateObj.matchups;
             matchupObjArray.forEach((matchupObj) => {
                 const voters = matchupObj.hasOwnProperty("voters")? matchupObj.voters : [];
@@ -38,7 +39,7 @@ class RoundMap {
 
 module.exports.buildRoundMap = () => datastore.runQuery(stateQuery)
   .then((response) => {
-    logger.info(response);
+    logger.info(JSON.stringify(response));
     return new RoundMap(response[0][0]);
   });
 
