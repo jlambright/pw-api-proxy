@@ -40,19 +40,17 @@ module.exports.buildRoundMap = () => datastore.runQuery(stateQuery)
     return new RoundMap(response[0][0].matchups);
   });
 
-module.exports.updateRoundMap = (roundMap) => {
+module.exports.updateRoundMap = (matchUpId, uid) => {
 
     return datastore.runQuery(stateQuery)
         .then((response) => {
             let state = response[0][0];
-            state.matchups = Object.entries(roundMap.matchups).map(([key, value], index) => {
-                return {
-                    id: key,
-                    "a-story": value.a,
-                    "b-story": value.b,
-                    voters: value.voters
-                }
-            })
+            state.matchups[matchUpId] = {
+                id: key,
+                "a-story": value.a,
+                "b-story": value.b,
+                voters: state.matchups[matchUpId].voters.push(uid)
+            }
             const entity = {
                 key: key,
                 data: state,

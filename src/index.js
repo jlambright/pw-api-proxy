@@ -52,11 +52,21 @@ server.post("/vote/:id", (req, res, next) => {
             if (storyID in roundMap.stories) {
                 const storyMatchInfo = roundMap.stories[storyID];
                 const matchupID = storyMatchInfo.matchID;
-                let voterIDs = storyMatchInfo.hasOwnProperty("voters") ? storyMatchInfo.voters : [];
+
+                let voterIDs = [];
+
+                if (storyMatchInfo.hasOwnProperty("voters") && storyMatchInfo.voters !== []) {
+                    voterIDs = storyMatchInfo.voters
+                }
+
                 const slot = storyMatchInfo.slot;
 
                 return MatchupsCollection.item(matchupID).then((matchUpObj) => {
-                    voterIDs = matchUpObj.hasOwnProperty("voters") ? JSON.parse(matchUpObj.voters) : voterIDs;
+
+                    if (matchUpObj.hasOwnProperty("voters") && matchUpObj.voters !== []) {
+                        voterIDs = matchUpObj.voters
+                    }
+
                     logger.info(`Voters: ${voterIDs}`);
                     logger.info(`Round Map: ${roundMap}`);
                     if (voterIDs.includes(uid)) {
@@ -67,11 +77,9 @@ server.post("/vote/:id", (req, res, next) => {
                             voters: JSON.stringify(voterIDs),
                         }
                         fields[`${slot}-votes`] = ++matchUpObj[`${slot}-votes`]
-                        roundMap.matchups[matchupID].voters = voterIDs;
-                        roundMap.stories[storyID].voters = voterIDs;
 
                         return MatchupsCollection.patchLiveItem(matchupID, {fields: fields})
-                            .then((response) => updateRoundMap(roundMap)
+                            .then((response) => updateRoundMap(matchupID, uid)
                                 .then(() => {
                                     logger.info(`Voter: ${uid}, Story: ${storyID}`);
                                     return res.send({data: {message: "vote successful", response: response}})
