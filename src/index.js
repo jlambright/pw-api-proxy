@@ -103,7 +103,7 @@ server.post("/vote/:id", (req, res, next) => {
 
 server.get("/round", (req, res, next) => {
     const storyID = req.params.id;
-    return build().then((roundMap) => {
+    return RoundMapbuild().then((roundMap) => {
         return res.send({data:roundMap});
     }).catch((reason) => {
         if (reason !== null) logger.error(reason);
