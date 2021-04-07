@@ -12,20 +12,22 @@ class RoundMap {
 
     constructor(matchupArray) {
         try {
-                Object.entries(matchupArray).forEach((key, value, index) => {
+                Object.entries(matchupArray).forEach((entry) => {
+                const {key, value} = entry;
+                const aStoryID = value["a-story"];
+                const bStoryID = value["b-story"];
                 const voters = value.hasOwnProperty("voters")? value.voters : [];
                 const storyArray = [value["a-story"], value["b-story"]];
                 this.matchups[key] = {
+                    "a-story": aStoryID,
+                    "b-story": bStoryID,
                     voters: voters,
                 };
-                this.matchups[key][value["a-story"]] = "a";
-                this.matchups[key][value["b-story"]] = "b";
-
-                this.stories[value["a-story"]] = {
+                this.stories[aStoryID] = {
                         matchID: key,
                         slot: this.matchups[key][value["a-story"]]
                 };
-                this.stories[value["b-story"]] = {
+                this.stories[bStoryID] = {
                     matchID: key,
                     slot: this.matchups[key][value["b-story"]]
                 }
