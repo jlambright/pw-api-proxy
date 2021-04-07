@@ -38,18 +38,21 @@ module.exports.build = () => datastore.runQuery(stateQuery)
     return RoundMap(response[0][0].matchups);
   });
 
-module.exports.update = (matchUpId, uid) => datastore.runQuery(stateQuery)
+module.exports.update = (matchUpId, uid) => {
+    return datastore.runQuery(stateQuery)
         .then((response) => {
             let state = response[0][0];
-            state.matchups[matchUpId].voters.push(uid);
-            const entity = {
-                key: key,
-                data: state,
-            };
-
-            return datastore.save(entity, (err) => {
-                if (err !== null) {
-                    logger.error(err);
-                }
-            });
+            if ( matchUpId in state.matchups ) {
+                state.matchups[matchUpId].voters.push(uid);
+                const entity = {
+                    key: key,
+                    data: state,
+                };
+                return datastore.save(entity, (err) => {
+                    if (err !== null) {
+                        logger.error(err);
+                    }
+                });
+            }
         });
+}
