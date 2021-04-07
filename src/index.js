@@ -60,7 +60,7 @@ server.post("/vote/:id", (req, res, next) => {
                 return MatchupsCollection.item(matchupID).then((matchUpObj) => {
 
                     if (matchUpObj.hasOwnProperty("voters")) {
-                        let parsedVoterIDs = JSON.parse(matchUpObj.voters);
+                        let parsedVoterIDs = matchUpObj.voters.split(",");
                         voterIDs = (voterIDs !== parsedVoterIDs)? parsedVoterIDs : voterIDs;
                     }
 
@@ -69,7 +69,7 @@ server.post("/vote/:id", (req, res, next) => {
                     } else {
                         voterIDs.push(uid)
                         let fields = {
-                            voters: JSON.stringify(voterIDs),
+                            voters: voterIDs.toString(),
                         }
                         fields[`${slot}-votes`] = ++matchUpObj[`${slot}-votes`]
 
