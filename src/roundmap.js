@@ -22,11 +22,11 @@ const RoundMap = (matchupArray) => {
         };
         stories[aStoryID] = {
             matchID: key,
-            slot: this.matchups[key][value["a-story"]]
+            slot: "a"
         };
         stories[bStoryID] = {
             matchID: key,
-            slot: this.matchups[key][value["b-story"]]
+            slot: "b"
         }
     });
 
