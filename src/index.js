@@ -64,7 +64,7 @@ server.post("/vote/:id", (req, res, next) => {
                     } else {
                         voterIDs.push(uid)
 
-                        data["voters"] = voterIDs.toString();
+                        data["voters"] = JSON.stringify(voterIDs);
                         roundMap.matchups[matchupID].voters = voterIDs;
                         roundMap.stories[storyID].voters = voterIDs;
 
