@@ -35,7 +35,7 @@ const RoundMap = (matchupArray) => {
 
 module.exports.build = () => datastore.runQuery(stateQuery)
   .then((response) => {
-    return new RoundMap(response[0][0].matchups);
+    return RoundMap(response[0][0].matchups);
   });
 
 module.exports.update = (matchUpId, uid) => datastore.runQuery(stateQuery)
