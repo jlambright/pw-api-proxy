@@ -1,5 +1,3 @@
-require('@google-cloud/debug-agent').start({serviceContext: {enableCanary: false}});
-
 const { Datastore } = require("@google-cloud/datastore");
 const datastore = new Datastore();
 

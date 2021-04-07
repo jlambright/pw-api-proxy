@@ -1,5 +1,3 @@
-require('@google-cloud/debug-agent').start({serviceContext: {enableCanary: false}});
-
 const Webflow = require("webflow-api");
 const {buildRequiredArgError} = require("webflow-api/dist/WebflowError");
 
