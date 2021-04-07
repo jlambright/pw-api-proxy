@@ -57,6 +57,7 @@ server.post("/vote/:id", (req, res, next) => {
 
                 if (storyMatchInfo.hasOwnProperty("voters") && storyMatchInfo.voters !== []) {
                     voterIDs = storyMatchInfo.voters
+                    logger.info(`Voters: ${voterIDs}`);
                 }
 
                 const slot = storyMatchInfo.slot;
@@ -65,9 +66,10 @@ server.post("/vote/:id", (req, res, next) => {
 
                     if (matchUpObj.hasOwnProperty("voters") && matchUpObj.voters !== []) {
                         voterIDs = matchUpObj.voters
+                        logger.info(`Voters: ${voterIDs}`);
                     }
 
-                    logger.info(`Voters: ${voterIDs}`);
+                    logger.info(`Voters: ${voterIDs}, Type Of: ${typeof voterIDs}`);
                     logger.info(`Round Map: ${roundMap}`);
                     if (voterIDs.includes(uid)) {
                         return res.send({data: {message: "You've already voted for this story."}});
