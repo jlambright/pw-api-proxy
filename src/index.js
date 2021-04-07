@@ -6,7 +6,7 @@ const corsMiddleware = require('restify-cors-middleware2')
 const {getToken} = require('restify-firebase-auth');
 
 const {Admin, FirebaseAuth} = require("./auth");
-const {buildRoundMap, updateRoundMap} = require("./storymap");
+const RoundMap = require("./roundmap");
 const logger = require("./logger");
 const {MatchupsCollection} = require("./webflowclient");
 
@@ -48,7 +48,7 @@ server.post("/vote/:id", (req, res, next) => {
     const storyID = req.params.id;
     return Admin.auth().verifyIdToken(getToken(authorization)).then((decodedToken) => {
         const uid = decodedToken.uid;
-        return buildRoundMap().then((roundMap) => {
+        return RoundMap.build().then((roundMap) => {
             if (storyID in roundMap.stories) {
                 const storyMatchInfo = roundMap.stories[storyID];
                 const matchupID = storyMatchInfo.matchID;
@@ -74,7 +74,7 @@ server.post("/vote/:id", (req, res, next) => {
                         fields[`${slot}-votes`] = ++matchUpObj[`${slot}-votes`]
 
                         return MatchupsCollection.patchLiveItem(matchupID, {fields: fields})
-                            .then((response) => updateRoundMap(matchupID, uid)
+                            .then((response) => RoundMap.update(matchupID, uid)
                                 .then(() => {
                                     logger.info(`Voter: ${uid}, Story: ${storyID}`);
                                     return res.send({data: {message: "vote successful", response: response}})
@@ -103,7 +103,7 @@ server.post("/vote/:id", (req, res, next) => {
 
 server.get("/round", (req, res, next) => {
     const storyID = req.params.id;
-    return buildRoundMap().then((roundMap) => {
+    return build().then((roundMap) => {
         return res.send({data:roundMap});
     }).catch((reason) => {
         if (reason !== null) logger.error(reason);
