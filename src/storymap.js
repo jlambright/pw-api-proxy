@@ -45,6 +45,8 @@ module.exports.updateRoundMap = (matchUpId, uid) => {
         .then((response) => {
             let state = response[0][0];
             const matchupIndex = state.matchups.indexOf(matchUpId);
+            const matchUp = state.matchups[state.matchups.indexOf(matchUpId)]
+            logger.info(matchUp);
             state.matchups[matchupIndex].voters.push(uid);
             const entity = {
                 key: key,
