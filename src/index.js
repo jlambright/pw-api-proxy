@@ -53,18 +53,15 @@ server.post("/vote/:id", (req, res, next) => {
                 const storyMatchInfo = roundMap.stories[storyID];
                 const matchupID = storyMatchInfo.matchID;
 
-                let voterIDs = [];
-
-                if (storyMatchInfo.hasOwnProperty("voters") && storyMatchInfo.voters !== []) {
-                    voterIDs = storyMatchInfo.voters
-                }
+                let voterIDs = storyMatchInfo.hasOwnProperty("voters")? storyMatchInfo.voters : [];
 
                 const slot = storyMatchInfo.slot;
 
                 return MatchupsCollection.item(matchupID).then((matchUpObj) => {
 
                     if (matchUpObj.hasOwnProperty("voters")) {
-                        voterIDs = JSON.parse(matchUpObj.voters);
+                        let parsedVoterIDs = JSON.parse(matchUpObj.voters);
+                        voterIDs = (voterIDs !== parsedVoterIDs)? parsedVoterIDs : voterIDs;
                     }
 
                     if (voterIDs.includes(uid)) {
@@ -72,7 +69,7 @@ server.post("/vote/:id", (req, res, next) => {
                     } else {
                         voterIDs.push(uid)
                         let fields = {
-                            voters: escape(JSON.stringify(voterIDs)),
+                            voters: JSON.stringify(voterIDs.map((uidString) => escape(uidString))),
                         }
                         fields[`${slot}-votes`] = ++matchUpObj[`${slot}-votes`]
 
