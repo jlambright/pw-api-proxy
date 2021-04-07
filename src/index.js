@@ -1,3 +1,5 @@
+require('@google-cloud/debug-agent').start({serviceContext: {enableCanary: false}});
+
 const restify = require("restify");
 const errors = require("restify-errors");
 const corsMiddleware = require('restify-cors-middleware2')
