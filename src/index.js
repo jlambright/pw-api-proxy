@@ -47,40 +47,46 @@ server.post("/vote/:id", (req, res, next) => {
     return Admin.auth().verifyIdToken(getToken(authorization)).then((decodedToken) => {
         const uid = decodedToken.uid;
         return buildRoundMap().then((roundMap) => {
-            let round = roundMap;
             if (storyID in roundMap.stories) {
                 let data = {}
                 const storyMatchInfo = roundMap.stories[storyID];
                 const matchupID = storyMatchInfo.matchID;
                 let voters = storyMatchInfo.hasOwnProperty("voters") ? storyMatchInfo.voters : [];
                 const slot = storyMatchInfo.slot;
-                return MatchupsCollection.item(matchupID).then((matchUpObj) => {
-                    data[`${slot}-votes`] = ++matchUpObj[`${slot}-votes`]
-                    voters = matchUpObj.hasOwnProperty("voters") ? JSON.parse(matchUpObj.voters) : voters;
 
-                    if (voters.includes(uid)) {
-                        return res.send({data: {message: "You've already voted for this story."}});
-                    } else {
-                        voters.push(uid)
+                return (roundMap) => {
+                    return MatchupsCollection.item(matchupID).then((matchUpObj) => {
+                        data[`${slot}-votes`] = ++matchUpObj[`${slot}-votes`]
+                        voters = matchUpObj.hasOwnProperty("voters") ? JSON.parse(matchUpObj.voters) : voters;
 
-                        data["voters"] = voters.toString();
-                        round[matchupID].voters = voters;
-                        round[storyID].voters = voters;
+                        if (voters.includes(uid)) {
+                            return res.send({data: {message: "You've already voted for this story."}});
+                        } else {
+                            voters.push(uid)
 
-                        return MatchupsCollection.patchLiveItem(matchupID, {fields: data})
-                            .then((resp) => {
-                                logger.info(`Vote count updated: Story - ${storyID} by UID - ${uid}`);
-                                return updateRoundMap(round)
-                                    .then(() => res.send({data: {message: "vote successful"}}))
-                            })
-                            .catch((reason) => {
-                                if (reason !== null) logger.error(reason);
-                            })
-                            .catch((reason) => {
-                                if (reason !== null) logger.error(reason);
-                            });
-                    }
-                })
+                            data["voters"] = voters.toString();
+                            roundMap.matchups[matchupID].voters = voters;
+                            roundMap.stories[storyID].voters = voters;
+
+                            return MatchupsCollection.patchLiveItem(matchupID, {fields: data})
+                                .then((resp) => {
+
+                                    logger.info(`Vote count updated: Story - ${storyID} by UID - ${uid}`);
+                                    return updateRoundMap(round)
+                                        .then(() => res.send({data: {message: "vote successful"}}))
+                                })
+                                .catch((reason) => {
+                                    if (reason !== null) logger.error(reason);
+                                })
+                                .catch((reason) => {
+                                    if (reason !== null) logger.error(reason);
+                                });
+                            }
+                        })
+                        .catch((reason) => {
+                            if (reason !== null) logger.error(reason);
+                        });
+                    };
             } else {
                 return res.send({data: "Story not in not in active round."});
             }
