@@ -41,7 +41,7 @@ module.exports.build = () => datastore.runQuery(stateQuery)
 module.exports.update = (matchUpId, uid) => datastore.runQuery(stateQuery)
         .then((response) => {
             let state = response[0][0];
-            state.round.matchups[matchUpId].voters.push(uid);
+            state.matchups[matchUpId].voters.push(uid);
             const entity = {
                 key: key,
                 data: state,
