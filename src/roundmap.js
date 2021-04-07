@@ -18,15 +18,17 @@ class RoundMap {
                 this.matchups[key] = {
                     voters: voters,
                 };
-                this.matchups[key][matchupObj["a-story"]] = "a";
-                this.matchups[key][matchupObj["b-story"]] = "b";
+                this.matchups[key][value["a-story"]] = "a";
+                this.matchups[key][value["b-story"]] = "b";
 
-                storyArray.forEach(storyID => {
-                    this.stories[storyID] = {
+                this.stories[value["a-story"]] = {
                         matchID: key,
-                        slot: this.matchups[key][storyID]
-                    }
-                });
+                        slot: this.matchups[key][value["a-story"]]
+                };
+                this.stories[value["b-story"]] = {
+                    matchID: key,
+                    slot: this.matchups[key][value["b-story"]]
+                }
             });
         } catch (e) {
             logger.error(e);
