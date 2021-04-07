@@ -72,7 +72,7 @@ server.post("/vote/:id", (req, res, next) => {
                                 .then((resp) => {
 
                                     logger.info(`Vote count updated: Story - ${storyID} by UID - ${uid}`);
-                                    return updateRoundMap(round)
+                                    return updateRoundMap(roundMap)
                                         .then(() => res.send({data: {message: "vote successful"}}))
                                 })
                                 .catch((reason) => {
