@@ -1,3 +1,5 @@
+require('@google-cloud/debug-agent').start({serviceContext: {enableCanary: false}});
+
 const { Datastore } = require("@google-cloud/datastore");
 const datastore = new Datastore();
 
@@ -12,8 +14,8 @@ class RoundMap {
 
     constructor(stateObj) {
         try {
-            logger.log(JSON.stringify(stateObj));
-            const matchupObjArray = stateObj.matchups;
+            const state = JSON.parse(stateObj);
+            const matchupObjArray = state.matchups;
             matchupObjArray.forEach((matchupObj) => {
                 const voters = matchupObj.hasOwnProperty("voters")? matchupObj.voters : [];
                 const storyArray = [matchupObj["a-story"], matchupObj["b-story"]];
@@ -39,7 +41,6 @@ class RoundMap {
 
 module.exports.buildRoundMap = () => datastore.runQuery(stateQuery)
   .then((response) => {
-    logger.info(JSON.stringify(response));
     return new RoundMap(response[0][0]);
   });
 
