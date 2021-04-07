@@ -11,35 +11,35 @@ class RoundMap {
     stories = {}
 
     constructor(stateObj) {
-        const matchupObjArray = stateObj.matchups;
-        matchupObjArray.forEach((matchupObj) => {
-            const voters = matchupObj.hasOwnProperty("voters")? matchupObj.voters : [];
-            const storyArray = [matchupObj["a-story"], matchupObj["b-story"]];
-            this.matchups[matchupObj.id] = {
-                voters: voters,
-            };
-            this.matchups[matchupObj.id][matchupObj["a-story"]] = "a";
-            this.matchups[matchupObj.id][matchupObj["b-story"]] = "b";
+        try {
+            const matchupObjArray = stateObj.matchups;
+            matchupObjArray.forEach((matchupObj) => {
+                const voters = matchupObj.hasOwnProperty("voters")? matchupObj.voters : [];
+                const storyArray = [matchupObj["a-story"], matchupObj["b-story"]];
+                this.matchups[matchupObj.id] = {
+                    voters: voters,
+                };
+                this.matchups[matchupObj.id][matchupObj["a-story"]] = "a";
+                this.matchups[matchupObj.id][matchupObj["b-story"]] = "b";
 
-            storyArray.forEach(storyID => {
-                this.stories[storyID] = {
-                    matchID: matchupObj.id,
-                    slot: this.matchups[matchupObj.id][storyID],
-                    voters: this.matchups[matchupObj.id].voters
-                }
+                storyArray.forEach(storyID => {
+                    this.stories[storyID] = {
+                        matchID: matchupObj.id,
+                        slot: this.matchups[matchupObj.id][storyID],
+                        voters: this.matchups[matchupObj.id].voters
+                    }
+                });
             });
-        });
+        } catch (e) {
+
+        }
     }
 }
 
 module.exports.buildRoundMap = () => datastore.runQuery(stateQuery)
   .then((response) => {
     logger.info(response);
-    try{
-        return new RoundMap(response[0][0]);
-    } catch (e) {
-        logger.error(e);
-    }
+    return new RoundMap(response[0][0]);
   });
 
 module.exports.updateRoundMap = (roundMap) => {
