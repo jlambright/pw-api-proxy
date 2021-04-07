@@ -69,7 +69,7 @@ server.post("/vote/:id", (req, res, next) => {
                     } else {
                         voterIDs.push(uid)
                         let fields = {
-                            voters: JSON.stringify(JSON.stringify(voterIDs)),
+                            voters: JSON.stringify(voterIDs),
                         }
                         fields[`${slot}-votes`] = ++matchUpObj[`${slot}-votes`]
 
