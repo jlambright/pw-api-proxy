@@ -44,7 +44,8 @@ module.exports.updateRoundMap = (matchUpId, uid) => {
     return datastore.runQuery(stateQuery)
         .then((response) => {
             let state = response[0][0];
-            state.matchups[matchUpId].voters = state.matchups[matchUpId].voters.push(uid);
+            const matchupIndex = state.matchups.index(matchUpId);
+            state.matchups[matchupIndex].voters.push(uid);
             const entity = {
                 key: key,
                 data: state,
