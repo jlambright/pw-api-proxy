@@ -34,7 +34,12 @@ class RoundMap {
 
 module.exports.buildRoundMap = () => datastore.runQuery(stateQuery)
   .then((response) => {
-    return new RoundMap(response[0][0]);
+    logger.info(response);
+    try{
+        return new RoundMap(response[0][0]);
+    } catch (e) {
+        logger.error(e);
+    }
   });
 
 module.exports.updateRoundMap = (roundMap) => {

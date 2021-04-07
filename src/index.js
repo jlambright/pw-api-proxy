@@ -55,7 +55,6 @@ server.post("/vote/:id", (req, res, next) => {
                 const slot = storyMatchInfo.slot;
 
                 return MatchupsCollection.item(matchupID).then((matchUpObj) => {
-                    data[`${slot}-votes`] = ++matchUpObj[`${slot}-votes`]
                     voterIDs = matchUpObj.hasOwnProperty("voters") ? JSON.parse(matchUpObj.voters) : voterIDs;
                     logger.info(`Voters: ${voterIDs}`);
                     logger.info(`Round Map: ${roundMap}`);
@@ -63,7 +62,7 @@ server.post("/vote/:id", (req, res, next) => {
                         return res.send({data: {message: "You've already voted for this story."}});
                     } else {
                         voterIDs.push(uid)
-
+                        data[`${slot}-votes`] = ++matchUpObj[`${slot}-votes`]
                         data["voters"] = JSON.stringify(voterIDs);
                         roundMap.matchups[matchupID].voters = voterIDs;
                         roundMap.stories[storyID].voters = voterIDs;
