@@ -68,7 +68,7 @@ server.post("/vote/:id", (req, res, next) => {
                             roundMap.matchups[matchupID].voters = voters;
                             roundMap.stories[storyID].voters = voters;
 
-                            return MatchupsCollection.patchLiveItem(matchupID, {fields: data})
+                            return (roundMap) => MatchupsCollection.patchLiveItem(matchupID, {fields: data})
                                 .then((resp) => {
 
                                     logger.info(`Vote count updated: Story - ${storyID} by UID - ${uid}`);
