@@ -39,14 +39,12 @@ module.exports.buildRoundMap = () => datastore.runQuery(stateQuery)
     return new RoundMap(response[0][0].matchups);
   });
 
-module.exports.updateRoundMap = (matchUpId, uid) => {
-
-    return datastore.runQuery(stateQuery)
+module.exports.updateRoundMap = (matchUpId, uid) => datastore.runQuery(stateQuery)
         .then((response) => {
             let state = response[0][0];
             const matchupIndex = state.matchups.indexOf(matchUpId);
             const matchUp = state.matchups[state.matchups.indexOf(matchUpId)]
-            logger.info(matchUp);
+            logger.info(`Match Up State: ${matchUp.toString()}`);
             state.matchups[matchupIndex].voters.push(uid);
             const entity = {
                 key: key,
@@ -55,9 +53,7 @@ module.exports.updateRoundMap = (matchUpId, uid) => {
 
             return datastore.save(entity, (err) => {
                 if (err !== null) {
-                    logger.error(key.path);
-                    logger.error(key.namespace);
+                    logger.error(err);
                 }
             });
         });
-};
