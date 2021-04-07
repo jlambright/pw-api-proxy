@@ -10,9 +10,9 @@ class RoundMap {
     matchups = {};
     stories = {}
 
-    constructor(matchupObj) {
+    constructor(matchupArray) {
         try {
-            stateObj.matchups.forEach((matchupObj) => {
+            matchupArray.forEach((matchupObj) => {
                 const voters = matchupObj.hasOwnProperty("voters")? matchupObj.voters : [];
                 const storyArray = [matchupObj["a-story"], matchupObj["b-story"]];
                 this.matchups[matchupObj.id] = {
