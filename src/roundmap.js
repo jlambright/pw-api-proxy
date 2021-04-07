@@ -11,21 +11,20 @@ const RoundMap = (matchupArray) => {
     let stories = {};
 
     Object.entries(matchupArray).forEach((entry) => {
-        const {key, value} = entry;
+        const [key, value] = entry;
         const aStoryID = value["a-story"];
         const bStoryID = value["b-story"];
         const voters = value.hasOwnProperty("voters") ? value.voters : [];
-        const storyArray = [value["a-story"], value["b-story"]];
-        self.matchups[key] = {
+        matchups[key] = {
             "a-story": aStoryID,
             "b-story": bStoryID,
             voters: voters,
         };
-        self.stories[aStoryID] = {
+        stories[aStoryID] = {
             matchID: key,
             slot: this.matchups[key][value["a-story"]]
         };
-        self.stories[bStoryID] = {
+        stories[bStoryID] = {
             matchID: key,
             slot: this.matchups[key][value["b-story"]]
         }
