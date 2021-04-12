@@ -56,7 +56,7 @@ const RoundMap = (response) => {
 
 module.exports.build = () => datastore.runQuery(stateQuery)
   .then((response) => {
-    return RoundMap(response[0][0].matchups);
+    return RoundMap(response[0][0]);
   });
 
 /**
