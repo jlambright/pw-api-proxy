@@ -74,7 +74,7 @@ server.post("/vote/:id", (req, res, next) => {
                         fields[`${slot}-votes`] = ++matchUpObj[`${slot}-votes`]
 
                         return MatchupsCollection.patchLiveItem(matchupID, {fields: fields})
-                            .then((response) => RoundMap.update(matchupID, uid)
+                            .then((response) => RoundMap.update(matchupID, uid, new Date(response["updated-on"]))
                                 .then(() => {
                                     logger.info(`Voter: ${uid}, Story: ${storyID}`);
                                     return res.send({data: {message: "vote successful", response: response}})
@@ -102,7 +102,6 @@ server.post("/vote/:id", (req, res, next) => {
 });
 
 server.get("/round", (req, res, next) => {
-    const storyID = req.params.id;
     return RoundMap.build().then((roundMap) => {
         return res.send({data:roundMap});
     }).catch((reason) => {
