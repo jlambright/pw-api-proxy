@@ -29,7 +29,7 @@ module.exports = async (req, res, next) => {
                         parsedVoterIDs.forEach(uid => voterIDs.add(uid));
                     }
 
-                    if (voterIDs.includes(uid)) {
+                    if (voterIDs.has(uid)) {
                         return res.send({data: {message: "You've already voted for this story."}});
                     } else {
                         voterIDs.add(uid)
