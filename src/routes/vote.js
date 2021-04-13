@@ -5,7 +5,7 @@ const logger = require("../logger");
 const {MatchupsCollection} = require("../webflowclient");
 const RoundMap = require("../roundmap");
 
-module.exports.Vote = async (req, res, next) => {
+module.exports = async (req, res, next) => {
     const authorization = req.header('Authorization');
     const storyID = req.params.id;
     try {
