@@ -17,7 +17,7 @@ module.exports = async (req, res, next) => {
                 const storyMatchInfo = roundMap.stories[storyID];
                 const matchupID = storyMatchInfo.matchID;
 
-                let voterIDs = storyMatchInfo.hasOwnProperty("voters") ? storyMatchInfo.voters : [];
+                let voterIDs = new Set((storyMatchInfo.hasOwnProperty("voters") ? storyMatchInfo.voters : []));
 
                 const slot = storyMatchInfo.slot;
 
@@ -26,15 +26,14 @@ module.exports = async (req, res, next) => {
 
                     if (matchUpObj.hasOwnProperty("voters")) {
                         let parsedVoterIDs = matchUpObj.voters.split(",");
-                        voterIDs = (voterIDs !== parsedVoterIDs) ? parsedVoterIDs : voterIDs;
+                        parsedVoterIDs.forEach(uid => voterIDs.add(uid));
                     }
-
-                    voterIDs = [new Set(voterIDs)];
 
                     if (voterIDs.includes(uid)) {
                         return res.send({data: {message: "You've already voted for this story."}});
                     } else {
-                        voterIDs.push(uid)
+                        voterIDs.add(uid)
+                        voterIDs = [voterIDs];
                         let fields = {
                             voters: voterIDs.toString(),
                         }
@@ -45,7 +44,7 @@ module.exports = async (req, res, next) => {
                                 fields: fields
                             });
                             try {
-                                await RoundMap.update(matchupID, uid, new Date(response["updated-on"]));
+                                await RoundMap.update(matchupID, voterIDs, new Date(response["updated-on"]));
                                 logger.info(`Voter: ${uid}, Story: ${storyID}`);
                                 return res.send({data: {message: "vote successful", response: response}})
                             } catch (reason) {
