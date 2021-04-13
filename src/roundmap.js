@@ -10,7 +10,7 @@ const RoundMap = (response) => {
     const today = new Date();
     const lastRoundUpdate = response.hasOwnProperty("lastRoundUpdate")
         ? response.lastRoundUpdate
-        : new Date();
+        : today;
 
     const sameDay = today.getDay() === lastRoundUpdate.getDay();
 
@@ -54,6 +54,9 @@ const RoundMap = (response) => {
     return roundMap;
 }
 
+/**
+ * @return {RoundMap}
+ */
 module.exports.build = () => datastore.runQuery(stateQuery)
   .then((response) => {
     return RoundMap(response[0][0]);
