@@ -1,4 +1,4 @@
-const logger = require("./logger");
+const logger = require("../logger");
 const RoundMap = require("../roundmap");
 
 module.exports.Round = async (req, res, next) => {
