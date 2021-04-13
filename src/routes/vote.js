@@ -33,7 +33,7 @@ module.exports = async (req, res, next) => {
                         return res.send({data: {message: "You've already voted for this story."}});
                     } else {
                         voterIDs.add(uid)
-                        voterIDs = [voterIDs];
+                        voterIDs = [...voterIDs];
                         let fields = {
                             voters: voterIDs.toString(),
                         }
@@ -44,7 +44,7 @@ module.exports = async (req, res, next) => {
                                 fields: fields
                             });
                             try {
-                                await RoundMap.update(matchupID, voterIDs, new Date(response["updated-on"]));
+                                await RoundMap.update(matchupID, response.voters.split(','), new Date(response["updated-on"]));
                                 logger.info(`Voter: ${uid}, Story: ${storyID}`);
                                 return res.send({data: {message: "vote successful", response: response}})
                             } catch (reason) {
