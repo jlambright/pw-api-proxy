@@ -40,9 +40,9 @@ server.use(restify.plugins.acceptParser(server.acceptable));
 server.use(restify.plugins.queryParser());
 server.use(restify.plugins.bodyParser());
 
-server.post("/vote/:id", (req, res, next) => Vote(req, res, next));
+server.post("/vote/:id", Vote);
 
-server.get("/round", (req, res, next) => Round(req, res, next));
+server.get("/round", Round);
 
 const port = process.env.PORT || 3030
 server.listen(port, function() {
