@@ -64,16 +64,16 @@ module.exports.build = () => datastore.runQuery(stateQuery)
 
 /**
  * @param {number} matchUpId
- * @param {string} uid
+ * @param {[string]} voterList
  * @param {Date} updatedOn
  * @return {Promise}
  */
-module.exports.update = (matchUpId, uid, updatedOn) => {
+module.exports.update = (matchUpId, voterList, updatedOn) => {
     return datastore.runQuery(stateQuery)
         .then((response) => {
             let state = response[0][0];
             if ( matchUpId in state.matchups ) {
-                state.matchups[matchUpId].voters.push(uid);
+                state.matchups[matchUpId].voters = voterList;
                 state.matchups[matchUpId].lastUpdate = updatedOn;
                 state.lastRoundUpdate = updatedOn;
                 const entity = {
