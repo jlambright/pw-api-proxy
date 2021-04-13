@@ -10,7 +10,7 @@ const RoundMap = (response) => {
     const today = new Date();
     const lastRoundUpdate = response.hasOwnProperty("lastRoundUpdate")
         ? response.lastRoundUpdate
-        : new Date();
+        : today;
 
     const sameDay = today.getDay() === lastRoundUpdate.getDay();
 
