@@ -2,7 +2,7 @@ const {getToken} = require('restify-firebase-auth');
 
 const {Admin} = require("../auth");
 const logger = require("../logger");
-const {MatchupsCollection} = require("./webflowclient");
+const {MatchupsCollection} = require("../webflowclient");
 const RoundMap = require("../roundmap");
 
 module.exports.Vote = async (req, res, next) => {
