@@ -74,7 +74,7 @@ module.exports.update = (matchUpId, voterList, updatedOn) => {
             let state = response[0][0];
             if ( matchUpId in state.matchups ) {
                 state.matchups[matchUpId].voters = voterList;
-                state.matchups[matchUpId].lastUpdate = updatedOn;
+                state.matchups[matchUpId]["updated-on"] = updatedOn;
                 state.lastRoundUpdate = updatedOn;
                 const entity = {
                     key: key,
