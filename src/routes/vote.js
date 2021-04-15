@@ -35,12 +35,12 @@ module.exports = async (req, res, next) => {
                     voters: voterIDs.toString(),
                 }
                 fields[`${slot}-votes`] = ++matchUpObj[`${slot}-votes`]
-                await MatchupsCollection.patchLiveItem(matchupID, {
+                const patchResponse = await MatchupsCollection.patchLiveItem(matchupID, {
                     fields: fields
                 });
-                await RoundMap.update(matchupID, voterIDs, new Date(response["updated-on"])).then();
+                const datastoreResponse = await RoundMap.update(matchupID, voterIDs, new Date(patchResponse["updated-on"]));
                 logger.info(`Voter: ${uid}, Story: ${storyID}`);
-                return res.send({data: {message: "vote successful", response: response}})
+                return res.send({data: {message: "vote successful", response: datastoreResponse}})
             }
         } else {
             return res.send({data: "Story is not in an active round."});

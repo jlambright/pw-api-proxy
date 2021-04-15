@@ -12,7 +12,7 @@ const RoundMap = (response) => {
         ? response.lastRoundUpdate
         : today;
 
-    const sameDay = today.getDay() === lastRoundUpdate.getDay();
+    const sameDay = today.getUTCDay() === lastRoundUpdate.getUTCDay();
 
     let roundMap = {
         lastRoundUpdate: lastRoundUpdate,
