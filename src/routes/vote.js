@@ -16,7 +16,7 @@ module.exports = async (req, res, next) => {
             const storyMatchInfo = roundMap.stories[storyID];
             const matchupID = storyMatchInfo.matchID;
 
-            let voterIDs = new Set((storyMatchInfo.hasOwnProperty("voters") ? storyMatchInfo.voters : []));
+            let voterIDs = new Set(((storyMatchInfo.hasOwnProperty("voters") && roundMap.sameDay) ? storyMatchInfo.voters : []));
 
             const slot = storyMatchInfo.slot;
             const matchUpObj = await MatchupsCollection.item(matchupID);
