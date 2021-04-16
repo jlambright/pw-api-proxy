@@ -12,12 +12,12 @@ const RoundMap = (response) => {
         ? response.lastRoundUpdate
         : today;
 
-    const sameDay = today.getUTCDay() === lastRoundUpdate.getUTCDay();
+    const newDay = today.getUTCDay() + 1 > lastRoundUpdate.getUTCDay() + 1;
 
     let roundMap = {
         lastRoundUpdate: lastRoundUpdate,
         matchups: {},
-        sameDay: sameDay,
+        newDay: newDay,
         stories: {},
     }
 
@@ -26,7 +26,7 @@ const RoundMap = (response) => {
         const aStoryID = value["a-story"];
         const bStoryID = value["b-story"];
         const updatedOn = value["updated-on"];
-        const voters = (value.hasOwnProperty("voters") && sameDay) ? value.voters : [];
+        const voters = (value.hasOwnProperty("voters") && newDay) ? value.voters : [];
         roundMap.matchups[key] = {
             "a-story": aStoryID,
             "b-story": bStoryID,
