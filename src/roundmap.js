@@ -87,7 +87,7 @@ module.exports.build = () => datastore.runQuery(stateQuery)
  */
 module.exports.update = async (matchUpId, voterList, updatedOn) => {
     return transaction.run((err, transaction) => {
-        return transaction.get(key, async (err, response) => {
+        return transaction.get(key, (err, response) => {
 
             let state = response[0][0];
             if (matchUpId in state.matchups) {
@@ -99,7 +99,7 @@ module.exports.update = async (matchUpId, voterList, updatedOn) => {
                     data: state,
                 };
                 transaction.save(entity);
-                return await transaction.commit((err) => {
+                return transaction.commit((err) => {
                     if (!err) {
                         logger.info("Data saved successfully.");
                     } else {

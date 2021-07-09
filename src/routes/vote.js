@@ -38,6 +38,7 @@ module.exports = async (req, res, next) => {
                 const patchResponse = await MatchupsCollection.patchLiveItem(matchupID, {
                     fields: fields
                 });
+                logger.debug(patchResponse);
                 return RoundMap.update(matchupID, voterIDs, new Date(patchResponse["updated-on"])).then(datastoreResponse => {
                     logger.info(`Voter: ${uid}, Story: ${storyID}`);
                     return res.send({data: {message: "vote successful", response: datastoreResponse}})
