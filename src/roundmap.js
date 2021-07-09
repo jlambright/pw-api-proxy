@@ -101,6 +101,7 @@ module.exports.update = (matchUpId, voterList, updatedOn) => {
                         logger.error(err);
                     }
                 });
+                //What is going on here????
             }
         });
 }
