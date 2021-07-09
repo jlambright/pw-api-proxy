@@ -1,5 +1,6 @@
 const { Datastore } = require("@google-cloud/datastore");
 const datastore = new Datastore();
+const transaction = datastore.transaction();
 
 const logger = require("./logger");
 
@@ -84,11 +85,12 @@ module.exports.build = () => datastore.runQuery(stateQuery)
  * @param {Date} updatedOn
  * @return {Promise}
  */
-module.exports.update = (matchUpId, voterList, updatedOn) => {
-    return datastore.runQuery(stateQuery)
-        .then((response) => {
+module.exports.update = async (matchUpId, voterList, updatedOn) => {
+    await transaction.run((err, transaction) => {
+        transaction.get(key, (err, response) => {
+
             let state = response[0][0];
-            if ( matchUpId in state.matchups ) {
+            if (matchUpId in state.matchups) {
                 state.matchups[matchUpId].voters = voterList;
                 state.matchups[matchUpId]["updated-on"] = updatedOn;
                 state.lastRoundUpdate = updatedOn;
@@ -96,11 +98,21 @@ module.exports.update = (matchUpId, voterList, updatedOn) => {
                     key: key,
                     data: state,
                 };
-                return datastore.save(entity, (err) => {
-                    if (err !== null) {
+                transaction.save(entity);
+                transaction.commit((err) => {
+                    if (!err) {
+                        logger.info("Data saved successfully.");
+                    } else {
                         logger.error(err);
                     }
                 });
             }
-        });
+        })
+    });
+
+    return transaction.run().then((data) => {
+        const transaction = data[0];
+        const apiResponse = data[1];
+        return apiResponse;
+    });
 }
