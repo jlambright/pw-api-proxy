@@ -106,6 +106,7 @@ module.exports.update = async (matchUpId, voterList, updatedOn) => {
                         logger.error(err);
                     }
                 });
+                //What is going on here????
             }
         })
     });
