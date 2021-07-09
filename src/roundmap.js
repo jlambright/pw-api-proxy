@@ -11,7 +11,13 @@ const isNewDay = (today, update) => {
     const updateInt = update.getUTCDay() + 1;
 
     if (todayInt != updateInt) {
-        return today > update;
+        if (todayInt > updateInt) {
+            return true;
+        } else if (today > update) {
+            return true;
+        } else {
+            return false;
+        }
     } else {
         return false;
     }
@@ -36,7 +42,7 @@ const RoundMap = (response) => {
         const aStoryID = value["a-story"];
         const bStoryID = value["b-story"];
         const updatedOn = value["updated-on"];
-        const voters = (value.hasOwnProperty("voters") && !isNewDay(today, updatedOn)) ? value.voters : [];
+        const voters = (value.hasOwnProperty("voters") && isNewDay(today, updatedOn)) ?  [] : value.voters;
         roundMap.matchups[key] = {
             "a-story": aStoryID,
             "b-story": bStoryID,
@@ -74,7 +80,7 @@ module.exports.build = () => datastore.runQuery(stateQuery)
 
 /**
  * @param {number} matchUpId
- * @param {[string]} voterList
+ * @param {Set<any>} voterList
  * @param {Date} updatedOn
  * @return {Promise}
  */
