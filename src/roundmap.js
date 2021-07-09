@@ -6,19 +6,29 @@ const logger = require("./logger");
 const key = datastore.key(["Active", "state"]);
 const stateQuery = datastore.createQuery("Active").filter("__key__", key);
 
+const isNewDay = (today, update) => {
+    const todayInt = today.getUTCDay() + 1;
+    const updateInt = update.getUTCDay() + 1;
+
+    if (todayInt != updateInt) {
+        return today > update;
+    } else {
+        return false;
+    }
+}
+
 const RoundMap = (response) => {
     const today = new Date();
     const lastRoundUpdate = response.hasOwnProperty("lastRoundUpdate")
         ? response.lastRoundUpdate
         : today;
 
-    const newDay = today.getUTCDay() + 1 > lastRoundUpdate.getUTCDay() + 1;
 
     let roundMap = {
         lastRoundUpdate: lastRoundUpdate,
         matchups: {},
-        newDay: newDay,
-        stories: {},
+        newDay: isNewDay(today, lastRoundUpdate),
+        stories: {}
     }
 
     Object.entries(response.matchups).forEach((entry) => {
@@ -26,7 +36,7 @@ const RoundMap = (response) => {
         const aStoryID = value["a-story"];
         const bStoryID = value["b-story"];
         const updatedOn = value["updated-on"];
-        const voters = (value.hasOwnProperty("voters") && !newDay) ? value.voters : [];
+        const voters = (value.hasOwnProperty("voters") && !isNewDay(today, lastRoundUpdate)) ? value.voters : [];
         roundMap.matchups[key] = {
             "a-story": aStoryID,
             "b-story": bStoryID,
