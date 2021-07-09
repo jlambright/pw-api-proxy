@@ -36,7 +36,7 @@ const RoundMap = (response) => {
         const aStoryID = value["a-story"];
         const bStoryID = value["b-story"];
         const updatedOn = value["updated-on"];
-        const voters = (value.hasOwnProperty("voters") && !isNewDay(today, lastRoundUpdate)) ? value.voters : [];
+        const voters = (value.hasOwnProperty("voters") && !isNewDay(today, updatedOn)) ? value.voters : [];
         roundMap.matchups[key] = {
             "a-story": aStoryID,
             "b-story": bStoryID,
