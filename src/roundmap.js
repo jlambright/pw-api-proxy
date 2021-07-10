@@ -5,20 +5,18 @@ const transaction = datastore.transaction();
 const logger = require("./logger");
 
 const activeStateKey = datastore.key(["State", "active"]);
-const activeStateQuery = datastore.createQuery("State").filter("__key__", activeStateKey);
+//const activeStateQuery = datastore.createQuery("State").filter("__key__", activeStateKey);
 const archiveStateKey = datastore.key(["State", "archive"]);
-const archiveStateQuery = datastore.createQuery("State").filter("__key__", archiveStateKey);
+//const archiveStateQuery = datastore.createQuery("State").filter("__key__", archiveStateKey);
 
 
 
 const isNewDay = (today, update) => {
-    const todayInt = today.getUTCDay() + 1;
-    const updateInt = update.getUTCDay() + 1;
+    const todayInt = today.getUTCDay();
+    const updateInt = update.getUTCDay();
 
     if (todayInt != updateInt) {
-        if (todayInt > updateInt) {
-            return true;
-        } else if (today > update) {
+        if (todayInt > updateInt || today > update) {
             return true;
         } else {
             return false;
