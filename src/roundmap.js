@@ -11,19 +11,11 @@ const archiveStateKey = datastore.key(["State", "archive"]);
 
 
 
-const isNewDay = (today, update) => {
-    const todayInt = today.getUTCDay();
-    const updateInt = update.getUTCDay();
+const isToday = (dateToCheck, today) => {
 
-    if (todayInt != updateInt) {
-        if (todayInt > updateInt || today > update) {
-            return true;
-        } else {
-            return false;
-        }
-    } else {
-        return false;
-    }
+    return dateToCheck.getDate() == today.getDate() &&
+        dateToCheck.getMonth() == today.getMonth() &&
+        dateToCheck.getFullYear() == today.getFullYear();
 }
 
 const createOrUpdateEntity = async (data, key) => {
@@ -54,7 +46,7 @@ const RoundMap = async (stateObj) => {
             ? stateObj.lastRoundUpdate
             : today;
 
-        const newDayFlag = isNewDay(today, lastRoundUpdate);
+        const newDayFlag = !isToday(lastRoundUpdate, today);
 
         if (newDayFlag) {
             await createOrUpdateEntity(stateObj, archiveStateKey);
