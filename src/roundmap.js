@@ -1,10 +1,15 @@
 const { Datastore } = require("@google-cloud/datastore");
 const datastore = new Datastore();
+const transaction = datastore.transaction();
 
 const logger = require("./logger");
 
-const key = datastore.key(["Active", "state"]);
-const stateQuery = datastore.createQuery("Active").filter("__key__", key);
+const activeStateKey = datastore.key(["State", "active"]);
+const activeStateQuery = datastore.createQuery("State").filter("__key__", activeStateKey);
+const archiveStateKey = datastore.key(["State", "archive"]);
+const archiveStateQuery = datastore.createQuery("State").filter("__key__", archiveStateKey);
+
+
 
 const isNewDay = (today, update) => {
     const todayInt = today.getUTCDay() + 1;
@@ -23,59 +28,89 @@ const isNewDay = (today, update) => {
     }
 }
 
-const RoundMap = (response) => {
-    const today = new Date();
-    const lastRoundUpdate = response.hasOwnProperty("lastRoundUpdate")
-        ? response.lastRoundUpdate
-        : today;
-
-
-    let roundMap = {
-        lastRoundUpdate: lastRoundUpdate,
-        matchups: {},
-        newDay: isNewDay(today, lastRoundUpdate),
-        stories: {}
+const createOrUpdateEntity = async (data, key) => {
+    const entity = {
+        key: key,
+        data: data
     }
+    try {
+        await transaction.run(async (err) => {
+            const [state] = await transaction.get(key);
+            if (state) {
+                await transaction.update(entity);
+            } else {
+                await transaction.save(entity);
+            }
+            await transaction.commit();
+        });
+    } catch (e) {
+        logger.error("----Datastore Transaction Failure----");
+        await transaction.rollback();
+    }
+}
 
-    Object.entries(response.matchups).forEach((entry) => {
-        const [key, value] = entry;
-        const aStoryID = value["a-story"];
-        const bStoryID = value["b-story"];
-        const updatedOn = value["updated-on"];
-        const voters = (value.hasOwnProperty("voters") && isNewDay(today, updatedOn)) ?  [] : value.voters;
-        roundMap.matchups[key] = {
-            "a-story": aStoryID,
-            "b-story": bStoryID,
-            voters: voters,
-            "updated-on": updatedOn
-        };
+const RoundMap = async (stateObj) => {
+    try {
+        const today = new Date();
+        const lastRoundUpdate = stateObj.hasOwnProperty("lastRoundUpdate")
+            ? stateObj.lastRoundUpdate
+            : today;
 
-        roundMap.stories[aStoryID] = {
-            matchID: key,
-            slot: "a"
-        };
-        roundMap.stories[bStoryID] = {
-            matchID: key,
-            slot: "b"
+        const newDayFlag = isNewDay(today, lastRoundUpdate);
+
+        if (newDayFlag) {
+            await createOrUpdateEntity(stateObj, archiveStateKey);
         }
 
-        if (roundMap.lastRoundUpdate) {
-            roundMap.lastRoundUpdate =
-                roundMap.lastRoundUpdate < updatedOn ? updatedOn : roundMap.lastRoundUpdate;
-        } else {
-            roundMap.lastRoundUpdate = updatedOn;
+        let roundMap = {
+            lastRoundUpdate: lastRoundUpdate,
+            matchups: {},
+            newDay: newDayFlag,
+            stories: {}
         }
-    });
 
-    return roundMap;
+        Object.entries(stateObj.matchups).forEach((entry) => {
+            const [key, value] = entry;
+            const aStoryID = value["a-story"];
+            const bStoryID = value["b-story"];
+            const updatedOn = value["updated-on"];
+            const voters = (value.hasOwnProperty("voters") && newDayFlag) ? [] : value.voters;
+            roundMap.matchups[key] = {
+                "a-story": aStoryID,
+                "b-story": bStoryID,
+                voters: voters,
+                "updated-on": updatedOn
+            };
+
+            roundMap.stories[aStoryID] = {
+                matchID: key,
+                slot: "a"
+            };
+            roundMap.stories[bStoryID] = {
+                matchID: key,
+                slot: "b"
+            }
+
+            if (roundMap.lastRoundUpdate) {
+                roundMap.lastRoundUpdate =
+                    roundMap.lastRoundUpdate < updatedOn ? updatedOn : roundMap.lastRoundUpdate;
+            } else {
+                roundMap.lastRoundUpdate = updatedOn;
+            }
+        });
+
+        return roundMap;
+    } catch (e) {
+        logger.error("----RoundMap Creation Failure----");
+    }
 }
 
 /**
  * @return {RoundMap}
  */
-module.exports.build = () => datastore.runQuery(stateQuery)
+module.exports.build = () => datastore.runQuery(activeStateQuery)
   .then((response) => {
-    return RoundMap(response[0][0]);
+      return RoundMap(response[0][0]);
   });
 
 /**
@@ -84,23 +119,30 @@ module.exports.build = () => datastore.runQuery(stateQuery)
  * @param {Date} updatedOn
  * @return {Promise}
  */
-module.exports.update = (matchUpId, voterList, updatedOn) => {
-    return datastore.runQuery(stateQuery)
-        .then((response) => {
-            let state = response[0][0];
-            if ( matchUpId in state.matchups ) {
+module.exports.update = async (matchUpId, voterList, updatedOn) => {
+
+    return transaction.run((err, transaction) => {
+        return transaction.get(activeStateKey, (err, state) => {
+            if (matchUpId in state.matchups) {
                 state.matchups[matchUpId].voters = voterList;
                 state.matchups[matchUpId]["updated-on"] = updatedOn;
                 state.lastRoundUpdate = updatedOn;
                 const entity = {
-                    key: key,
-                    data: state,
-                };
-                return datastore.save(entity, (err) => {
-                    if (err !== null) {
-                        logger.error(err);
-                    }
+                    key: activeStateKey,
+                    data: state
+                }
+                transaction.update(entity);
+                transaction.commit((err, apiResponse) => {
+                   if (err) {
+                       logger.error(`Update failed:\n ${apiResponse}`);
+                   } else {
+                       logger.info(`Matchup ${matchUpId} updated.`)
+                       return apiResponse;
+                   }
                 });
             }
-        });
+        })
+    })
+
+
 }
