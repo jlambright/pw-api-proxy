@@ -39,9 +39,9 @@ module.exports = async (req, res, next) => {
                     fields: fields
                 });
                 logger.debug(patchResponse);
-                return RoundMap.update(matchupID, voterIDs, new Date(patchResponse["updated-on"])).then(datastoreResponse => {
+                return RoundMap.update(matchupID, voterIDs, new Date(patchResponse["updated-on"])).then(() => {
                     logger.info(`Voter: ${uid}, Story: ${storyID}`);
-                    return res.send({data: {message: "vote successful", response: datastoreResponse}})
+                    return res.send({data: {message: "vote successful"}});
                 }).catch(error => logger.error(error))
             }
         } else {

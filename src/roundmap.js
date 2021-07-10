@@ -123,20 +123,15 @@ module.exports.update = async (matchUpId, voterList, updatedOn) => {
                     data: state
                 }
                 transaction.update(entity);
-                return await transaction.commit((err, apiResponse) => {
-                    if (err) {
-                        logger.error(`Update failed:\n ${apiResponse}`);
-                    } else {
-                        logger.info(`Matchup ${matchUpId} updated.`);
-                        logger.info(JSON.stringify(apiResponse));
-                    }
-                });
+                await transaction.commit();
             }
         } else {
             throw new Error("No active state entity was retrieved.");
         }
     } catch (e) {
-        logger.error(e);
+        logger.error(`Update failed`);
+        await transaction.rollback();
+        throw e;
     }
 
 
