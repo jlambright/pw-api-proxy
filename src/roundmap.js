@@ -31,7 +31,13 @@ const createOrUpdateEntity = async (data, key) => {
             } else {
                 await transaction.save(entity);
             }
-            await transaction.commit();
+            return await transaction.commit((err) => {
+                if (!err) {
+                    logger.info("Datastore Transaction Complete")
+                } else {
+                    logger.error("----Datastore Transaction Failure----");
+                }
+            });
         });
     } catch (e) {
         logger.error("----Datastore Transaction Failure----");
@@ -101,7 +107,9 @@ const RoundMap = async (stateObj) => {
 module.exports.build = () => datastore.runQuery(activeStateQuery)
   .then((response) => {
       return RoundMap(response[0][0]);
-  });
+  }).catch(err => {
+      logger.error(JSON.stringify(err));
+    });
 
 /**
  * @param {number} matchUpId
@@ -110,9 +118,10 @@ module.exports.build = () => datastore.runQuery(activeStateQuery)
  * @return {Promise}
  */
 module.exports.update = async (matchUpId, voterList, updatedOn) => {
-
-    return transaction.run((err, transaction) => {
-        return transaction.get(activeStateKey, (err, state) => {
+    try {
+        await transaction.run();
+        const [state] = await transaction.get(activeStateKey);
+        if (state) {
             if (matchUpId in state.matchups) {
                 state.matchups[matchUpId].voters = voterList;
                 state.matchups[matchUpId]["updated-on"] = updatedOn;
@@ -122,17 +131,21 @@ module.exports.update = async (matchUpId, voterList, updatedOn) => {
                     data: state
                 }
                 transaction.update(entity);
-                transaction.commit((err, apiResponse) => {
-                   if (err) {
-                       logger.error(`Update failed:\n ${apiResponse}`);
-                   } else {
-                       logger.info(`Matchup ${matchUpId} updated.`)
-                       return apiResponse;
-                   }
+                await transaction.commit((err, apiResponse) => {
+                    if (err) {
+                        logger.error(`Update failed:\n ${apiResponse}`);
+                    } else {
+                        logger.info(`Matchup ${matchUpId} updated.`)
+                    }
                 });
             }
-        })
-    })
+        } else {
+            throw new Error("No active state entity was retrieved.");
+        }
+    } catch (e) {
+        logger.error(e);
+    }
+
 
 
 }
