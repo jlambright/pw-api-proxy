@@ -112,13 +112,14 @@ module.exports.build = () => datastore.runQuery(activeStateQuery)
  */
 module.exports.update = async (matchUpId, voterList, updatedOn) => {
     try {
+        let updatedOnTz = DateTime.fromJSDate(updatedOn).setZone('America/New_York');
         await transaction.run();
         const [state] = await transaction.get(activeStateKey);
         if (state) {
             if (matchUpId in state.matchups) {
                 state.matchups[matchUpId].voters = voterList;
-                state.matchups[matchUpId]["updated-on"] = updatedOn;
-                state.lastRoundUpdate = updatedOn;
+                state.matchups[matchUpId]["updated-on"] = updatedOnTz.toJSDate();
+                state.lastRoundUpdate = updatedOnTz.toJSDate();
                 const entity = {
                     key: activeStateKey,
                     data: state
