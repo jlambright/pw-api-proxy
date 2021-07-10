@@ -1,3 +1,4 @@
+const { DateTime } = require("luxon");
 const { Datastore } = require("@google-cloud/datastore");
 const datastore = new Datastore();
 const transaction = datastore.transaction();
@@ -13,9 +14,9 @@ const archiveStateQuery = datastore.createQuery("State").filter("__key__", archi
 
 const isToday = (dateToCheck, today) => {
 
-    return dateToCheck.getDate() == today.getDate() &&
-        dateToCheck.getMonth() == today.getMonth() &&
-        dateToCheck.getFullYear() == today.getFullYear();
+    return dateToCheck.hasSame(today, 'day') &&
+        dateToCheck.hasSame(today, 'month') &&
+        dateToCheck.hasSame(today, 'year');
 }
 
 const createOrUpdateEntity = async (data, key) => {
@@ -40,10 +41,10 @@ const createOrUpdateEntity = async (data, key) => {
 
 const RoundMap = async (stateObj) => {
     try {
-        const today = new Date();
-        const lastRoundUpdate = stateObj.hasOwnProperty("lastRoundUpdate")
+        const today = new DateTime.now().setZone('America/New_York');
+        const lastRoundUpdate = new DateTime.fromJSDate(stateObj.hasOwnProperty("lastRoundUpdate")
             ? stateObj.lastRoundUpdate
-            : today;
+            : today).setZone('America/New_York');
 
         const newDayFlag = !isToday(lastRoundUpdate, today);
 
