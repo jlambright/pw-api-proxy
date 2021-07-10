@@ -41,8 +41,8 @@ const createOrUpdateEntity = async (data, key) => {
 
 const RoundMap = async (stateObj) => {
     try {
-        const today = new DateTime.now().setZone('America/New_York');
-        const lastRoundUpdate = new DateTime.fromJSDate(stateObj.hasOwnProperty("lastRoundUpdate")
+        const today = DateTime.now().setZone('America/New_York');
+        const lastRoundUpdate = DateTime.fromJSDate(stateObj.hasOwnProperty("lastRoundUpdate")
             ? stateObj.lastRoundUpdate
             : today).setZone('America/New_York');
 
