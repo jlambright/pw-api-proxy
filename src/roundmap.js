@@ -5,7 +5,7 @@ const transaction = datastore.transaction();
 const logger = require("./logger");
 
 const activeStateKey = datastore.key(["State", "active"]);
-//const activeStateQuery = datastore.createQuery("State").filter("__key__", activeStateKey);
+const activeStateQuery = datastore.createQuery("State").filter("__key__", activeStateKey);
 const archiveStateKey = datastore.key(["State", "archive"]);
 //const archiveStateQuery = datastore.createQuery("State").filter("__key__", archiveStateKey);
 
