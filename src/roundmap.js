@@ -34,8 +34,9 @@ const createOrUpdateEntity = async (data, key) => {
         }
         return await transaction.commit();
     } catch (e) {
-        logger.error(`----${key.kind}${key.name} Transaction Failure----`);
+        logger.error(`[${key.kind}/${key.name} Transaction Failure]`);
         await transaction.rollback();
+        throw e;
     }
 }
 
@@ -92,7 +93,8 @@ const RoundMap = async (stateObj) => {
         });
         return roundMap;
     } catch (e) {
-        logger.error("----RoundMap Creation Failure----");
+        logger.error("[RoundMap Creation Failure]");
+        throw e;
     }
 }
 
