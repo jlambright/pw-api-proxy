@@ -66,7 +66,7 @@ const RoundMap = async (stateObj) => {
             const bStoryID = value["b-story"];
             const updatedOn = value["updated-on"];
             const matchNewDay = !isToday(updatedOn, today);
-            const voters = (value.hasOwnProperty("voters") && matchNewDay) ? [] : value.voters;
+            const voters = (value.hasOwnProperty("voters") || !matchNewDay) ? value.voters : [];
             roundMap.matchups[key] = {
                 "a-story": aStoryID,
                 "b-story": bStoryID,
@@ -110,7 +110,7 @@ module.exports.build = () => datastore.runQuery(activeStateQuery)
 
 /**
  * @param {number} matchUpId
- * @param {Set<any>} voterList
+ * @param {any[]} voterList
  * @param {Date} updatedOn
  * @return {Promise}
  */
