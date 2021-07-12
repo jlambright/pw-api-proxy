@@ -64,12 +64,14 @@ const RoundMap = async (stateObj) => {
             const aStoryID = value["a-story"];
             const bStoryID = value["b-story"];
             const updatedOn = value["updated-on"];
-            const voters = (value.hasOwnProperty("voters") && newDayFlag) ? [] : value.voters;
+            const matchNewDay = !isToday(updatedOn, today);
+            const voters = (value.hasOwnProperty("voters") && matchNewDay) ? [] : value.voters;
             roundMap.matchups[key] = {
                 "a-story": aStoryID,
                 "b-story": bStoryID,
                 voters: voters,
-                "updated-on": updatedOn
+                "updated-on": updatedOn,
+                newDay: matchNewDay
             };
 
             roundMap.stories[aStoryID] = {

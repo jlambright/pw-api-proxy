@@ -21,7 +21,7 @@ module.exports = async (req, res, next) => {
             const slot = storyMatchInfo.slot;
             const matchUpObj = await MatchupsCollection.item(matchupID);
 
-            if (matchUpObj.hasOwnProperty("voters") && !roundMap.newDay) {
+            if (matchUpObj.hasOwnProperty("voters") && !matchUpObj.newDay) {
                 let parsedVoterIDs = matchUpObj.voters.split(",");
                 parsedVoterIDs.forEach(uid => voterIDs.add(uid));
             }
