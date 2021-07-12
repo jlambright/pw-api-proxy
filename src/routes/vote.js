@@ -30,16 +30,16 @@ module.exports = async (req, res, next) => {
                 return res.send({data: {message: "You've already voted for this story."}});
             } else {
                 voterIDs.add(uid)
-                voterIDs = [...voterIDs];
+                const voters = [...voterIDs];
                 let fields = {
-                    voters: voterIDs.toString(),
+                    voters: voters.toString(),
                 }
                 fields[`${slot}-votes`] = ++matchUpObj[`${slot}-votes`]
                 const patchResponse = await MatchupsCollection.patchLiveItem(matchupID, {
                     fields: fields
                 });
-                logger.debug(patchResponse);
-                return RoundMap.update(matchupID, voterIDs, new Date(patchResponse["updated-on"])).then(() => {
+                logger.debug(JSON.stringify(patchResponse));
+                return RoundMap.update(matchupID, voters, new Date(patchResponse["updated-on"])).then(() => {
                     logger.info(`Voter: ${uid}, Story: ${storyID}`);
                     return res.send({data: {message: "vote successful"}});
                 }).catch(error => logger.error(error))
