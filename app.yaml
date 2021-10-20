@@ -20,5 +20,4 @@ handlers:
           'https://purple-wall.webflow.io',
           'https://*.purplewallstories.com',
       ]
-    script: auto
 # [END app_yaml]
