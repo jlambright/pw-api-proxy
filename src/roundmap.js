@@ -99,20 +99,12 @@ const RoundMap = async (stateObj) => {
  */
 module.exports.build = async () => {
     try {
-        const activeStateEntity = await datastore.runQuery(activeStateQuery);
-        return await RoundMap(activeStateEntity);
+        const activeStateQueryResponse = await datastore.runQuery(activeStateQuery);
+        return await RoundMap(activeStateQueryResponse[0][0]);
     } catch (err) {
         logger.error(JSON.stringify(err));
     }
 }
-
-
-datastore.runQuery(activeStateQuery)
-    .then((response) => {
-        return RoundMap(response[0][0]);
-    }).catch(err => {
-    logger.error(JSON.stringify(err));
-});
 
 /**
  * @param {number} matchUpId
