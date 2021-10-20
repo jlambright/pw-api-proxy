@@ -25,7 +25,7 @@ const cors = corsMiddleware({
         "Credentials",
         "Mode"
     ],
-    exposeHeaders: ['API-Token-Expiry']
+    exposeHeaders: ['API-Token-Expiry',"Access-Control-Allow-Origin", "Authorization"]
 })
 
 const server = restify.createServer({
