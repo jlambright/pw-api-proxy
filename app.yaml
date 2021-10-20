@@ -8,4 +8,16 @@ env_variables:
   WF_ROUNDS_ID: $WF_ROUNDS_ID
   WF_SITE_ID: $WF_SITE_ID
   WF_STORIES_ID: $WF_STORIES_ID
+
+handlers:
+  - url: /.*
+    script: auto
+    http_headers:
+      Access-Control-Allow-Origin: [
+          'https://app.purplewallstories.com',
+          'https://dev.purplewallstories.com',
+          'https://purple-wall.appspot.com',
+          'https://purple-wall.webflow.io',
+          'https://*.purplewallstories.com',
+      ]
 # [END app_yaml]
