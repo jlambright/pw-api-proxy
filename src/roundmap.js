@@ -58,7 +58,7 @@ const RoundMap = async (stateObj) => {
             const [key, value] = entry;
             const aStoryID = value["a-story"];
             const bStoryID = value["b-story"];
-            const updatedOn = value["updated-on"];
+            const updatedOn = DateTime.fromJSDate(value["updated-on"]).setZone('America/New_York');
             const matchNewDay = !isToday(updatedOn, today);
             const voters = (value.hasOwnProperty("voters") || !matchNewDay) ? value.voters : [];
             matchups[key] = {
