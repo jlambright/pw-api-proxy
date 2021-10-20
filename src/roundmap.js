@@ -4,7 +4,7 @@ const datastore = new Datastore();
 const transaction = datastore.transaction();
 
 const logger = require("./logger");
-const {MatchupsCollection} = require("webflowclient");
+const {MatchupsCollection} = require("./webflowclient");
 
 const activeStateKey = datastore.key(["State", "active"]);
 const activeStateQuery = datastore.createQuery("State").filter("__key__", activeStateKey);
