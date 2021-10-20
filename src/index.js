@@ -8,16 +8,15 @@ const {FirebaseAuth} = require("./auth");
 const {Round, Vote} = require("./routes");
 
 const cors = corsMiddleware({
-    preflightMaxAge: 5, //Optional,
+    preflightMaxAge: 50, //Optional,
     credentials: true,
     origins: [
         'https://app.purplewallstories.com',
-        'https://dev.purplewallstories.com',
         'https://purple-wall.appspot.com',
         'https://purple-wall.webflow.io',
-        'https://*.purplewallstories.com',
     ],
     allowHeaders: [
+        "Access-Control-Allow-Headers",
         "Access-Control-Allow-Origin",
         'API-Token',
         "Authorization",
@@ -25,7 +24,7 @@ const cors = corsMiddleware({
         "Credentials",
         "Mode"
     ],
-    exposeHeaders: ['API-Token-Expiry',"Access-Control-Allow-Origin", "Authorization"]
+    exposeHeaders: ['API-Token-Expiry',"Access-Control-Allow-Headers","Access-Control-Allow-Origin", "Authorization"]
 })
 
 const server = restify.createServer({
