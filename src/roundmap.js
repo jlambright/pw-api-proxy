@@ -43,22 +43,16 @@ const createOrUpdateEntity = async (data, key) => {
 const RoundMap = async (stateObj) => {
     try {
         const today = DateTime.now().setZone('America/New_York');
-        const lastRoundUpdate = DateTime.fromJSDate(stateObj.hasOwnProperty("lastRoundUpdate")
+        let lastRoundUpdate = DateTime.fromJSDate(stateObj.hasOwnProperty("lastRoundUpdate")
             ? stateObj.lastRoundUpdate
             : today).setZone('America/New_York');
-
         const newDayFlag = !isToday(lastRoundUpdate, today);
 
         if (newDayFlag) {
             await createOrUpdateEntity(stateObj, archiveStateKey);
         }
-
-        let roundMap = {
-            lastRoundUpdate: lastRoundUpdate,
-            matchups: {},
-            newDay: newDayFlag,
-            stories: {}
-        }
+        let matchups = {};
+        let stories = {};
 
         Object.entries(stateObj.matchups).forEach((entry) => {
             const [key, value] = entry;
@@ -67,7 +61,7 @@ const RoundMap = async (stateObj) => {
             const updatedOn = value["updated-on"];
             const matchNewDay = !isToday(updatedOn, today);
             const voters = (value.hasOwnProperty("voters") || !matchNewDay) ? value.voters : [];
-            roundMap.matchups[key] = {
+            matchups[key] = {
                 "a-story": aStoryID,
                 "b-story": bStoryID,
                 voters: voters,
@@ -75,23 +69,25 @@ const RoundMap = async (stateObj) => {
                 newDay: matchNewDay
             };
 
-            roundMap.stories[aStoryID] = {
+            stories[aStoryID] = {
                 matchID: key,
                 slot: "a"
             };
-            roundMap.stories[bStoryID] = {
+            stories[bStoryID] = {
                 matchID: key,
                 slot: "b"
             }
 
-            if (roundMap.lastRoundUpdate) {
-                roundMap.lastRoundUpdate =
-                    roundMap.lastRoundUpdate < updatedOn ? updatedOn : roundMap.lastRoundUpdate;
-            } else {
-                roundMap.lastRoundUpdate = updatedOn;
+            if (lastRoundUpdate && lastRoundUpdate < updatedOn) {
+                lastRoundUpdate = updatedOn;
             }
         });
-        return roundMap;
+        return {
+            lastRoundUpdate,
+            matchups,
+            newDayFlag,
+            stories,
+        };
     } catch (e) {
         logger.error("[RoundMap Creation Failure]");
         throw e;
