@@ -11,7 +11,7 @@ env_variables:
 
 handlers:
   - url: /.*
-    script: auto
+    secure: always
     http_headers:
       Access-Control-Allow-Origin: [
           'https://app.purplewallstories.com',
@@ -20,4 +20,5 @@ handlers:
           'https://purple-wall.webflow.io',
           'https://*.purplewallstories.com',
       ]
+    script: auto
 # [END app_yaml]
