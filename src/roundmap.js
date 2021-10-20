@@ -4,11 +4,12 @@ const datastore = new Datastore();
 const transaction = datastore.transaction();
 
 const logger = require("./logger");
+const {MatchupsCollection} = require("webflowclient");
 
 const activeStateKey = datastore.key(["State", "active"]);
 const activeStateQuery = datastore.createQuery("State").filter("__key__", activeStateKey);
 const archiveStateKey = datastore.key(["State", "archive"]);
-const archiveStateQuery = datastore.createQuery("State").filter("__key__", archiveStateKey);
+// const archiveStateQuery = datastore.createQuery("State").filter("__key__", archiveStateKey);
 
 
 
@@ -60,19 +61,29 @@ const RoundMap = async (stateObj) => {
             stories: {}
         }
 
-        Object.entries(stateObj.matchups).forEach((entry) => {
+        for (const entry of Object.entries(stateObj.matchups)) {
             const [key, value] = entry;
             const aStoryID = value["a-story"];
             const bStoryID = value["b-story"];
             const updatedOn = value["updated-on"];
-            const matchNewDay = !isToday(updatedOn, today);
-            const voters = (value.hasOwnProperty("voters") || !matchNewDay) ? value.voters : [];
+            const matchUpNewDay = !isToday(updatedOn, today);
+            const voters = (value.hasOwnProperty("voters") || !matchUpNewDay) ? value.voters : [];
+
+            if (matchUpNewDay) {
+                const fields = {
+                    voters: voters.toString(),
+                }
+                await MatchupsCollection.patchLiveItem(key, {
+                    fields: fields
+                });
+            }
+
             roundMap.matchups[key] = {
                 "a-story": aStoryID,
                 "b-story": bStoryID,
                 voters: voters,
                 "updated-on": updatedOn,
-                newDay: matchNewDay
+                newDay: matchUpNewDay
             };
 
             roundMap.stories[aStoryID] = {
@@ -90,7 +101,7 @@ const RoundMap = async (stateObj) => {
             } else {
                 roundMap.lastRoundUpdate = updatedOn;
             }
-        });
+        }
         return roundMap;
     } catch (e) {
         logger.error("[RoundMap Creation Failure]");
