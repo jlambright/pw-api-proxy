@@ -4,6 +4,7 @@ const datastore = new Datastore();
 const transaction = datastore.transaction();
 
 const logger = require("./logger");
+const {MatchUpCollection} = require("./webflowclient");
 
 const activeStateKey = datastore.key(["State", "active"]);
 const activeStateQuery = datastore.createQuery("State").filter("__key__", activeStateKey);
@@ -40,6 +41,15 @@ const createOrUpdateEntity = async (data, key) => {
     }
 }
 
+class RoundMapObj {
+    constructor(stateObj) {
+        this.lastRoundUpdate = stateObj.lastRoundUpdate;
+        this.matchups = stateObj.matchups;
+        this.newDay = stateObj.newDayFlag;
+        this.stories = stateObj.stories;
+    }
+}
+
 const RoundMap = async (stateObj) => {
     try {
         const today = DateTime.now().setZone('America/New_York');
@@ -50,6 +60,15 @@ const RoundMap = async (stateObj) => {
 
         if (newDayFlag) {
             await createOrUpdateEntity(stateObj, archiveStateKey);
+            Object.entries(stateObj.matchups).forEach((entry) => {
+                let [matchUpID, matchUpData] = entry;
+                matchUpData.voters = [];
+                stateObj.matchups[matchUpID] = matchUpData
+                let fields = {
+                    voters: matchUpData.voters.toString(),
+                }
+                MatchUpCollection.patchLiveItem(matchUpID, fields);
+            })
         }
         let matchups = {};
         let stories = {};
@@ -58,9 +77,9 @@ const RoundMap = async (stateObj) => {
             const [key, value] = entry;
             const aStoryID = value["a-story"];
             const bStoryID = value["b-story"];
+            const voters = value.voters
             const updatedOn = DateTime.fromJSDate(value["updated-on"]).setZone('America/New_York');
             const matchNewDay = !isToday(updatedOn, today);
-            const voters = (value.hasOwnProperty("voters") || !matchNewDay) ? value.voters : [];
             matchups[key] = {
                 "a-story": aStoryID,
                 "b-story": bStoryID,
