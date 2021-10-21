@@ -60,15 +60,17 @@ const RoundMap = async (stateObj) => {
 
         if (newDayFlag) {
             await createOrUpdateEntity(stateObj, archiveStateKey);
-            Object.entries(stateObj.matchups).forEach((entry) => {
+            for (const entry of Object.entries(stateObj.matchups)) {
                 let [matchUpID, matchUpData] = entry;
                 matchUpData.voters = [];
-                stateObj.matchups[matchUpID] = matchUpData
                 let fields = {
                     voters: matchUpData.voters.toString(),
                 }
-                MatchUpCollection.patchLiveItem(matchUpID, fields);
-            })
+                const patchResponse = await MatchUpCollection.patchLiveItem(matchUpID, fields);
+                matchUpData["updated-on"] = patchResponse["updated-on"]
+                logger.debug(JSON.stringify(patchResponse));
+                stateObj.matchups[matchUpID] = matchUpData
+            }
         }
         let matchups = {};
         let stories = {};
@@ -101,12 +103,12 @@ const RoundMap = async (stateObj) => {
                 lastRoundUpdate = updatedOn;
             }
         });
-        return {
+        return new RoundMapObj({
             lastRoundUpdate,
             matchups,
             newDayFlag,
             stories,
-        };
+        });
     } catch (e) {
         logger.error("[RoundMap Creation Failure]");
         throw e;
@@ -148,9 +150,7 @@ module.exports.update = async (matchUpId, voterList, updatedOn) => {
                 transaction.update(entity);
                 await transaction.commit();
             }
-        } else {
-            throw new Error("No active state entity was retrieved.");
-        }
+        } else throw new Error("No active state entity was retrieved.");
     } catch (e) {
         logger.error(`Update failed`);
         await transaction.rollback();
