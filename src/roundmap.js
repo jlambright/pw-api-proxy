@@ -41,15 +41,6 @@ const createOrUpdateEntity = async (data, key) => {
     }
 }
 
-class RoundMapObj {
-    constructor(stateObj) {
-        this.lastRoundUpdate = stateObj.lastRoundUpdate;
-        this.matchups = stateObj.matchups;
-        this.newDay = stateObj.newDayFlag;
-        this.stories = stateObj.stories;
-    }
-}
-
 const RoundMap = async (stateObj) => {
     try {
         const today = DateTime.now().setZone('America/New_York');
@@ -60,6 +51,7 @@ const RoundMap = async (stateObj) => {
 
         if (newDayFlag) {
             await createOrUpdateEntity(stateObj, archiveStateKey);
+            lastRoundUpdate = today;
             for (const entry of Object.entries(stateObj.matchups)) {
                 let [matchUpID, matchUpData] = entry;
                 matchUpData.voters = [];
@@ -81,13 +73,11 @@ const RoundMap = async (stateObj) => {
             const bStoryID = value["b-story"];
             const voters = value.voters
             const updatedOn = DateTime.fromJSDate(value["updated-on"]).setZone('America/New_York');
-            const matchNewDay = !isToday(updatedOn, today);
             matchups[key] = {
                 "a-story": aStoryID,
                 "b-story": bStoryID,
                 voters: voters,
-                "updated-on": updatedOn,
-                newDay: matchNewDay
+                "updated-on": updatedOn
             };
 
             stories[aStoryID] = {
@@ -98,26 +88,19 @@ const RoundMap = async (stateObj) => {
                 matchID: key,
                 slot: "b"
             }
-
-            if (lastRoundUpdate && lastRoundUpdate < updatedOn) {
-                lastRoundUpdate = updatedOn;
-            }
         });
-        return new RoundMapObj({
+        return {
             lastRoundUpdate,
             matchups,
             newDayFlag,
             stories,
-        });
+        };
     } catch (e) {
         logger.error("[RoundMap Creation Failure]");
         throw e;
     }
 }
 
-/**
- * @return {RoundMap}
- */
 module.exports.build = async () => {
     try {
         const activeStateQueryResponse = await datastore.runQuery(activeStateQuery);
@@ -137,7 +120,8 @@ module.exports.update = async (matchUpId, voterList, updatedOn) => {
     try {
         let updatedOnTz = DateTime.fromJSDate(updatedOn).setZone('America/New_York');
         await transaction.run();
-        const [state] = await transaction.get(activeStateKey);
+        const activeStateQueryResponse = await transaction.get(activeStateKey);
+        const state = activeStateQueryResponse[0][0];
         if (state) {
             if (matchUpId in state.matchups) {
                 state.matchups[matchUpId].voters = voterList;
