@@ -120,8 +120,7 @@ module.exports.update = async (matchUpId, voterList, updatedOn) => {
     try {
         let updatedOnTz = DateTime.fromJSDate(updatedOn).setZone('America/New_York');
         await transaction.run();
-        const activeStateQueryResponse = await transaction.get(activeStateKey);
-        const state = activeStateQueryResponse[0][0];
+        const state = await transaction.get(activeStateKey);
         if (state) {
             if (matchUpId in state.matchups) {
                 state.matchups[matchUpId].voters = voterList;
