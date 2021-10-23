@@ -7,7 +7,7 @@ const logger = require("./logger");
 const {MatchUpCollection} = require("./webflowclient");
 
 const activeStateKey = datastore.key(["State", "active"]);
-const activeStateQuery = datastore.createQuery("State").filter("__key__", activeStateKey);
+// const activeStateQuery = datastore.createQuery("State").filter("__key__", activeStateKey);
 const archiveStateKey = datastore.key(["State", "archive"]);
 // const archiveStateQuery = datastore.createQuery("State").filter("__key__", archiveStateKey);
 
@@ -43,12 +43,14 @@ const createOrUpdateEntity = async (data, key) => {
 
 const RoundMap = async (stateObj) => {
     try {
+
+        // Determining if it is new day since last vote.
         const today = DateTime.now().setZone('America/New_York');
-        let lastRoundUpdate = DateTime.fromJSDate(stateObj.hasOwnProperty("lastRoundUpdate")
-            ? stateObj.lastRoundUpdate
-            : today).setZone('America/New_York');
+        const lastUpdateData = stateObj.hasOwnProperty("lastRoundUpdate") ? stateObj.lastRoundUpdate : today;
+        let lastRoundUpdate = DateTime.fromJSDate(lastUpdateData).setZone('America/New_York');
         const newDayFlag = !isToday(lastRoundUpdate, today);
 
+        // Archive and reset each match-up's voter list in Datastore and Webflow if it is a new day.
         if (newDayFlag) {
             await createOrUpdateEntity(stateObj, archiveStateKey);
             lastRoundUpdate = today;
@@ -93,6 +95,7 @@ const RoundMap = async (stateObj) => {
             lastRoundUpdate,
             matchups,
             newDayFlag,
+            number: stateObj.number, // This is actually a UUID from Webflow, for the "number" field of the match-up.
             stories,
         };
     } catch (e) {
@@ -103,8 +106,9 @@ const RoundMap = async (stateObj) => {
 
 module.exports.build = async () => {
     try {
-        const activeStateQueryResponse = await datastore.runQuery(activeStateQuery);
-        return await RoundMap(activeStateQueryResponse[0][0]);
+        await transaction.run();
+        const [state] = await transaction.get(activeStateKey);
+        return await RoundMap(state);
     } catch (err) {
         logger.error(JSON.stringify(err));
     }
