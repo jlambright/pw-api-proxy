@@ -4,6 +4,7 @@ const datastore = new Datastore();
 const transaction = datastore.transaction();
 
 const logger = require("./logger");
+const {MatchUpCollection} = require("./webflowclient");
 
 const activeStateKey = datastore.key(["State", "active"]);
 const activeStateQuery = datastore.createQuery("State").filter("__key__", activeStateKey);
@@ -50,6 +51,18 @@ const RoundMap = async (stateObj) => {
 
         if (newDayFlag) {
             await createOrUpdateEntity(stateObj, archiveStateKey);
+            lastRoundUpdate = today;
+            for (const entry of Object.entries(stateObj.matchups)) {
+                let [matchUpID, matchUpData] = entry;
+                matchUpData.voters = [];
+                let fields = {
+                    voters: matchUpData.voters.toString(),
+                }
+                const patchResponse = await MatchUpCollection.patchLiveItem(matchUpID, fields);
+                matchUpData["updated-on"] = patchResponse["updated-on"]
+                logger.debug(JSON.stringify(patchResponse));
+                stateObj.matchups[matchUpID] = matchUpData
+            }
         }
         let matchups = {};
         let stories = {};
@@ -58,15 +71,13 @@ const RoundMap = async (stateObj) => {
             const [key, value] = entry;
             const aStoryID = value["a-story"];
             const bStoryID = value["b-story"];
+            const voters = value.voters
             const updatedOn = DateTime.fromJSDate(value["updated-on"]).setZone('America/New_York');
-            const matchNewDay = !isToday(updatedOn, today);
-            const voters = (value.hasOwnProperty("voters") || !matchNewDay) ? value.voters : [];
             matchups[key] = {
                 "a-story": aStoryID,
                 "b-story": bStoryID,
                 voters: voters,
-                "updated-on": updatedOn,
-                newDay: matchNewDay
+                "updated-on": updatedOn
             };
 
             stories[aStoryID] = {
@@ -76,10 +87,6 @@ const RoundMap = async (stateObj) => {
             stories[bStoryID] = {
                 matchID: key,
                 slot: "b"
-            }
-
-            if (lastRoundUpdate && lastRoundUpdate < updatedOn) {
-                lastRoundUpdate = updatedOn;
             }
         });
         return {
@@ -94,9 +101,6 @@ const RoundMap = async (stateObj) => {
     }
 }
 
-/**
- * @return {RoundMap}
- */
 module.exports.build = async () => {
     try {
         const activeStateQueryResponse = await datastore.runQuery(activeStateQuery);
@@ -116,7 +120,8 @@ module.exports.update = async (matchUpId, voterList, updatedOn) => {
     try {
         let updatedOnTz = DateTime.fromJSDate(updatedOn).setZone('America/New_York');
         await transaction.run();
-        const [state] = await transaction.get(activeStateKey);
+        const activeStateQueryResponse = await transaction.get(activeStateKey);
+        const state = activeStateQueryResponse[0][0];
         if (state) {
             if (matchUpId in state.matchups) {
                 state.matchups[matchUpId].voters = voterList;
@@ -129,9 +134,7 @@ module.exports.update = async (matchUpId, voterList, updatedOn) => {
                 transaction.update(entity);
                 await transaction.commit();
             }
-        } else {
-            throw new Error("No active state entity was retrieved.");
-        }
+        } else throw new Error("No active state entity was retrieved.");
     } catch (e) {
         logger.error(`Update failed`);
         await transaction.rollback();
