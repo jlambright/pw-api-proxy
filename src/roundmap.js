@@ -1,5 +1,7 @@
-const { DateTime } = require("luxon");
-const { Datastore } = require("@google-cloud/datastore");
+import {isEqual} from "lodash";
+
+const {DateTime} = require("luxon");
+const {Datastore} = require("@google-cloud/datastore");
 const datastore = new Datastore();
 const transaction = datastore.transaction();
 
@@ -41,31 +43,19 @@ const createOrUpdateEntity = async (data, key) => {
     }
 }
 
-const RoundMap = async (stateObj) => {
+const RoundMap = async () => {
     try {
-        if (!roundMapInstance) {
-            // Determining if it is new day since last vote.
-            const today = DateTime.now().setZone('America/New_York');
-            const lastUpdateData = stateObj.hasOwnProperty("lastRoundUpdate") ? stateObj.lastRoundUpdate : today;
-            let lastRoundUpdate = DateTime.fromJSDate(lastUpdateData).setZone('America/New_York');
-            const newDayFlag = !isToday(lastRoundUpdate, today);
 
-            // Archive and reset each match-up's voter list in Datastore and Webflow if it is a new day.
-            if (newDayFlag) {
-                await createOrUpdateEntity(stateObj, archiveStateKey);
-                lastRoundUpdate = today;
-                for (const entry of Object.entries(stateObj.matchups)) {
-                    let [matchUpID, matchUpData] = entry;
-                    matchUpData.voters = [];
-                    let fields = {
-                        voters: matchUpData.voters.toString(),
-                    }
-                    const patchResponse = await MatchUpCollection.patchLiveItem(matchUpID, fields);
-                    matchUpData["updated-on"] = patchResponse["updated-on"]
-                    logger.debug(JSON.stringify(patchResponse));
-                    stateObj.matchups[matchUpID] = matchUpData
-                }
-            }
+        await transaction.run();
+        const [stateObj] = await transaction.get(activeStateKey);
+
+        // Determining if it is new day since last vote.
+        const today = DateTime.now().setZone('America/New_York');
+        const lastUpdateData = stateObj.hasOwnProperty("lastRoundUpdate") ? stateObj.lastRoundUpdate : today;
+        let lastRoundUpdate = DateTime.fromJSDate(lastUpdateData).setZone('America/New_York');
+        const newDayFlag = !isToday(lastRoundUpdate, today);
+
+        if (!roundMapInstance) {
             let matchups = {};
             let stories = {};
 
@@ -99,6 +89,39 @@ const RoundMap = async (stateObj) => {
                 stories,
             };
         }
+
+        // Archive and reset each match-up's voter list in Datastore and Webflow if it is a new day.
+        if (newDayFlag) {
+            await createOrUpdateEntity(stateObj, archiveStateKey);
+            lastRoundUpdate = today;
+            for (const entry of Object.entries(stateObj.matchups)) {
+                let [matchUpID, matchUpData] = entry;
+                matchUpData.voters = [];
+                let fields = {
+                    voters: matchUpData.voters.toString(),
+                }
+                const patchResponse = await MatchUpCollection.patchLiveItem(matchUpID, fields);
+                matchUpData["updated-on"] = patchResponse["updated-on"]
+                logger.debug(JSON.stringify(patchResponse));
+                stateObj.matchups[matchUpID] = matchUpData
+            }
+        }
+
+        // Ensure that the existing round map instance is kept up-to-date with Datastore.
+        if (isEqual(roundMapInstance.lastRoundUpdate, lastRoundUpdate)) {
+            roundMapInstance.lastRoundUpdate = lastRoundUpdate;
+        }
+        if (isEqual(roundMapInstance.matchups, stateObj.matchups)) {
+            roundMapInstance.matchups = stateObj.matchups;
+        }
+        if (roundMapInstance.number !== stateObj.number) {
+            roundMapInstance.number = stateObj.number;
+        }
+
+        if (roundMapInstance.newDayFlag !== newDayFlag) {
+            roundMapInstance.newDayFlag = newDayFlag;
+        }
+
         return roundMapInstance;
     } catch (e) {
         logger.error("[RoundMap Creation Failure]");
@@ -108,9 +131,7 @@ const RoundMap = async (stateObj) => {
 
 module.exports.build = async () => {
     try {
-        await transaction.run();
-        const [state] = await transaction.get(activeStateKey);
-        return await RoundMap(state);
+        return await RoundMap();
     } catch (err) {
         logger.error(JSON.stringify(err));
     }
