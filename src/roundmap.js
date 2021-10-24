@@ -1,4 +1,4 @@
-import {isEqual} from "lodash";
+const _ = require("lodash");
 
 const {DateTime} = require("luxon");
 const {Datastore} = require("@google-cloud/datastore");
@@ -108,10 +108,10 @@ const RoundMap = async () => {
         }
 
         // Ensure that the existing round map instance is kept up-to-date with Datastore.
-        if (isEqual(roundMapInstance.lastRoundUpdate, lastRoundUpdate)) {
+        if (_.isEqual(roundMapInstance.lastRoundUpdate, lastRoundUpdate)) {
             roundMapInstance.lastRoundUpdate = lastRoundUpdate;
         }
-        if (isEqual(roundMapInstance.matchups, stateObj.matchups)) {
+        if (_.isEqual(roundMapInstance.matchups, stateObj.matchups)) {
             roundMapInstance.matchups = stateObj.matchups;
         }
         if (roundMapInstance.number !== stateObj.number) {
