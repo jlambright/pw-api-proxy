@@ -100,10 +100,10 @@ const RoundMap = async () => {
                 let fields = {
                     voters: matchUpData.voters.toString(),
                 }
-                const patchResponse = await MatchUpCollection.patchLiveItem(matchUpID, fields);
+/*                const patchResponse = await MatchUpCollection.patchLiveItem(matchUpID, fields);
                 matchUpData["updated-on"] = patchResponse["updated-on"]
                 logger.debug(JSON.stringify(patchResponse));
-                stateObj.matchups[matchUpID] = matchUpData
+                stateObj.matchups[matchUpID] = matchUpData*/
             }
         }
 
@@ -131,7 +131,9 @@ const RoundMap = async () => {
 
 module.exports.build = async () => {
     try {
-        return await RoundMap();
+        await transaction.run();
+        const [state] = await transaction.get(activeStateKey);
+        return await RoundMap(state);
     } catch (err) {
         logger.error(JSON.stringify(err));
     }
