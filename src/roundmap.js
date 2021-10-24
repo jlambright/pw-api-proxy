@@ -58,10 +58,10 @@ const RoundMap = async (stateObj) => {
                 let fields = {
                     voters: matchUpData.voters.toString(),
                 }
-                const patchResponse = await MatchUpCollection.patchLiveItem(matchUpID, fields);
+/*                const patchResponse = await MatchUpCollection.patchLiveItem(matchUpID, fields);
                 matchUpData["updated-on"] = patchResponse["updated-on"]
                 logger.debug(JSON.stringify(patchResponse));
-                stateObj.matchups[matchUpID] = matchUpData
+                stateObj.matchups[matchUpID] = matchUpData*/
             }
         }
         let matchups = {};
@@ -103,8 +103,9 @@ const RoundMap = async (stateObj) => {
 
 module.exports.build = async () => {
     try {
-        const activeStateQueryResponse = await datastore.runQuery(activeStateQuery);
-        return await RoundMap(activeStateQueryResponse[0][0]);
+        await transaction.run();
+        const [state] = await transaction.get(activeStateKey);
+        return await RoundMap(state);
     } catch (err) {
         logger.error(JSON.stringify(err));
     }
