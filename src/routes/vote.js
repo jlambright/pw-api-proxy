@@ -1,17 +1,49 @@
-const {getToken} = require('restify-firebase-auth');
+const {DateTime} = require("luxon");
 
-const {Admin} = require("../auth");
+const {getUidFromAuthHeader} = require("./helpers");
 const logger = require("../logger");
 const {MatchupsCollection} = require("../webflowclient");
 const RoundMap = require("../roundmap");
 
-module.exports = async (req, res, next) => {
-    const authorization = req.header('Authorization');
-    const storyID = req.params.id;
+const {voteEntityFactory} = require("../entities/voteEntity");
+
+let roundMap, voteEntity;
+
+module.exports.voteCheck = async (req, res, next) => {
     try {
-        const decodedToken = await Admin.auth().verifyIdToken(getToken(authorization));
-        const uid = decodedToken.uid;
-        const roundMap = await RoundMap.build();
+        let storyInRound;
+        roundMap = await RoundMap.build();
+        const sid = req.params.id;
+
+        if (sid in roundMap.stories) {
+            storyInRound = true;
+            const uid = await getUidFromAuthHeader(req.header('Authorization'));
+            const rid = roundMap.roundId;
+            const timestamp = DateTime.now().setZone("Americas/New_York");
+            const mid = roundMap.stories[sid].matchID;
+            voteEntity = voteEntityFactory(mid, rid, sid, timestamp, uid);
+        } else {
+            storyInRound = false;
+        }
+
+        return res.send({
+            data: {
+                hasVoted: await voteEntity.exists(),
+                inRound: storyInRound,
+            }
+        })
+
+    } catch (reason) {
+        if (reason !== null) logger.error(reason);
+    }
+}
+
+module.exports.castVote = async (req, res, next) => {
+    try {
+        const storyID = req.params.id;
+        const uid = await getUidFromAuthHeader(req.header('Authorization'));
+        roundMap = await RoundMap.build();
+
         if (storyID in roundMap.stories) {
             const storyMatchInfo = roundMap.stories[storyID];
             const matchupID = storyMatchInfo.matchID;

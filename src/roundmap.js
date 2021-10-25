@@ -36,11 +36,15 @@ const RoundMap = async () => {
         const newDayFlag = !isToday(lastRoundUpdate, today);
 
         if (!roundMapInstance) {
+            let roundId;
             let matchups = {};
             let stories = {};
 
             Object.entries(stateObj.matchups).forEach((entry) => {
                 const [key, value] = entry;
+
+                if (!roundId) roundId = value["round-id"];
+
                 const aStoryID = value["a-story"];
                 const bStoryID = value["b-story"];
                 const voters = value.voters
@@ -66,6 +70,7 @@ const RoundMap = async () => {
                 matchups,
                 newDayFlag,
                 number: stateObj.number, // This is actually a UUID from Webflow, for the "number" field of the match-up.
+                roundId,
                 stories,
             };
         }

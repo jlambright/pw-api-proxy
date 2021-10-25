@@ -2,7 +2,6 @@ require('@google-cloud/debug-agent').start({serviceContext: {enableCanary: false
 
 const restify = require("restify");
 const corsMiddleware = require('restify-cors-middleware2')
-const {getToken} = require('restify-firebase-auth');
 
 const {FirebaseAuth} = require("./auth");
 const {Round, Vote} = require("./routes");
@@ -39,7 +38,7 @@ server.use(restify.plugins.acceptParser(server.acceptable));
 server.use(restify.plugins.queryParser());
 server.use(restify.plugins.bodyParser());
 
-server.post("/vote/:id", Vote);
+server.post("/vote/:id", Vote.castVote);
 
 server.get("/round", Round);
 

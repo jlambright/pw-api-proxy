@@ -12,7 +12,7 @@ const transaction = datastore.transaction();
  * @param {entity.Key} key
  * @return {Promise<{response: [google.datastore.v1.ICommitResponse], conflict: boolean}>}
  */
-module.exports.createEntity = async (data, key) => {
+module.exports.createEntity = async ({data, key}) => {
     const entity = {
         key: key,
         data: data

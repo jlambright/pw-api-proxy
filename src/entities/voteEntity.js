@@ -10,36 +10,42 @@ const {entity} = require("@google-cloud/datastore/build/src/entity");
 
 /**
  * @param {string|number|entity.Int|string} userID
- * @param {Date} timestamp
+ * @param {DateTime} timestamp
  * @param {string} matchUpID
  * @param {string} storyID
  * @param {string} roundID
  * @return {object}
  */
-const VoteEntity = (userID, matchUpID, storyID, timestamp, roundID) => {
-    const date = DateTime.fromJSDate(timestamp).setZone("Americas/New_York");
-    const dateString = `${date.month}-${date.day}-${date.year}`;
-    const key = datastore.key(["User", userID, "Vote", dateString]);
+module.exports.voteEntityFactory = (matchUpID, roundID, storyID, timestamp, userID) => {
+    const dateString = `${timestamp.month}-${timestamp.day}-${timestamp.year}`;
+    const key = datastore.key(["Round", roundID, "MatchUp", matchUpID, "User", userID, "Vote", dateString]);
 
     const data = {
         userID,
         matchUpID,
         storyID,
-        date,
         roundID,
+        timestamp
     }
 
     return {
+        /**
+         *
+         * @return {Promise<{response: google.datastore.v1.ICommitResponse[], conflict: boolean}>}
+         */
         commit: async () => {
             try {
-                const {conflict} = await createEntity(this.key, this.d);
-                return conflict;
+                return await createEntity({key: this.key, data: this.data});
             } catch (e) {
                 logger.error(e);
             }
         },
         data,
         entityObject: undefined,
+        /**
+         *
+         * @return {Promise<boolean>}
+         */
         exists: async () => {
             try {
                 if (!this.entityObject) {
@@ -51,6 +57,10 @@ const VoteEntity = (userID, matchUpID, storyID, timestamp, roundID) => {
                 logger.error(e);
             }
         },
+        /**
+         *
+         * @return {Promise<object>}
+         */
         get: async () => {
             try {
                 if (!this.entityObject) {
