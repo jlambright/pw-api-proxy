@@ -2,16 +2,7 @@
 
 const Webflow = require("webflow-api");
 const {buildRequiredArgError} = require("webflow-api/dist/WebflowError");
-
-class Singleton {
-  _instance;
-
-  constructor(object = undefined) {
-    if (!this._instance) {
-      this._instance = object || this;
-    } else return this._instance;
-  }
-}
+const {Singleton} = require("./common");
 
 const WebflowClient = {
   api: new Webflow({ token: process.env.WF_API_KEY }),

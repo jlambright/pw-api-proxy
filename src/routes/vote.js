@@ -7,9 +7,7 @@ const logger = require("../logger");
 const {MatchupsCollection} = require("../webflowclient");
 const RoundMap = require("../roundmap");
 
-const {voteEntityFactory, calculateMatchUpVotes} = require("../entities/voteEntity");
-
-let voteEntity;
+const {VoteEntity, calculateMatchUpVotes} = require("../entities/voteEntity");
 
 const getVoteEntityParamsFromRoundMap = (storyID, roundMap) => {
     const roundID = roundMap.roundId;
@@ -24,24 +22,26 @@ const getVoteEntityParamsFromRoundMap = (storyID, roundMap) => {
 
 module.exports.voteCheck = async (req, res, next) => {
     try {
-        let storyInRound;
+        let hasVoted, inRound;
         const roundMap = await RoundMap.build();
         const storyID = req.params.id;
 
         if (storyID in roundMap.stories) {
-            storyInRound = true;
+            inRound = true;
             const userID = await getUidFromAuthHeader(req.header('Authorization'));
             const timestamp = DateTime.now().setZone("Americas/New_York");
             const {matchUpID, roundID} = getVoteEntityParamsFromRoundMap(storyID, roundMap);
-            voteEntity = voteEntityFactory(matchUpID, roundID, storyID, timestamp, userID);
+            const voteEntity = new VoteEntity(matchUpID, roundID, storyID, timestamp, userID);
+            hasVoted = await voteEntity.exists();
         } else {
-            storyInRound = false;
+            hasVoted = false;
+            inRound = false;
         }
 
         return res.send({
             data: {
-                hasVoted: await voteEntity.exists(),
-                inRound: storyInRound,
+                hasVoted,
+                inRound,
             }
         })
 
@@ -58,11 +58,9 @@ module.exports.castVote = async (req, res, next) => {
 
         if (storyID in roundMap.stories) {
             const {matchUpID, roundID} = getVoteEntityParamsFromRoundMap(storyID, roundMap);
+            const voteEntity = new VoteEntity(matchUpID, roundID, storyID, timestamp, userID);
+            ;
             const slot = roundMap.stories[storyID].slot;
-            if (!voteEntity || voteEntity.data.userID !== userID) {
-                const timestamp = DateTime.now().setZone("Americas/New_York");
-                voteEntity = voteEntityFactory(matchUpID, roundID, storyID, timestamp, userID);
-            }
             let wfMatchUp = await MatchupsCollection.item(voteEntity.data.matchUpID);
             let votes = ++wfMatchUp[`${slot}-votes`]
             voteEntity.data.votesFor = votes
