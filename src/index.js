@@ -38,9 +38,8 @@ server.use(restify.plugins.acceptParser(server.acceptable));
 server.use(restify.plugins.queryParser());
 server.use(restify.plugins.bodyParser());
 
+server.get(("/vote/:id"), Vote.voteCheck);
 server.post("/vote/:id", Vote.castVote);
-
-server.get("/round", Round);
 
 const port = process.env.PORT || 3030
 server.listen(port, function() {
