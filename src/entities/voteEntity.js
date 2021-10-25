@@ -1,3 +1,5 @@
+'use strict';
+
 const {DateTime} = require("luxon");
 const {Datastore} = require("@google-cloud/datastore");
 const datastore = new Datastore();
@@ -73,5 +75,29 @@ module.exports.voteEntityFactory = (matchUpID, roundID, storyID, timestamp, user
             }
         },
         key
+    }
+}
+
+/**
+ *
+ * @param {string} matchUpID
+ * @param {string} roundID
+ * @param {string} storyID
+ * @return {Promise<number>}
+ */
+module.exports.calculateMatchUpVotes = async (matchUpID, roundID, storyID) => {
+    try {
+        const query = datastore
+            .createQuery('Vote')
+            .filter('roundID', '=', roundID)
+            .filter('matchUpID', '=', matchUpID)
+            .filter('storyID', '=', storyID)
+            .order('priority', {
+                descending: true,
+            });
+        const [votes] = await datastore.runQuery(query);
+        return votes.length;
+    } catch (e) {
+        logger.error(e);
     }
 }

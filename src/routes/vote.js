@@ -1,3 +1,5 @@
+'use strict';
+
 const {DateTime} = require("luxon");
 
 const {getUidFromAuthHeader} = require("./helpers");
@@ -5,7 +7,7 @@ const logger = require("../logger");
 const {MatchupsCollection} = require("../webflowclient");
 const RoundMap = require("../roundmap");
 
-const {voteEntityFactory} = require("../entities/voteEntity");
+const {voteEntityFactory, calculateMatchUpVotes} = require("../entities/voteEntity");
 
 let voteEntity;
 
@@ -61,11 +63,19 @@ module.exports.castVote = async (req, res, next) => {
                 const timestamp = DateTime.now().setZone("Americas/New_York");
                 voteEntity = voteEntityFactory(matchUpID, roundID, storyID, timestamp, userID);
             }
+            let wfMatchUp = await MatchupsCollection.item(voteEntity.data.matchUpID);
+            let votes = ++wfMatchUp[`${slot}-votes`]
+            voteEntity.data.votesFor = votes
             await voteEntity.commit();
-            const wfMatchUp = await MatchupsCollection.item(voteEntity.data.matchUpID);
+            const dsVoteCount = await calculateMatchUpVotes(matchUpID, roundID, storyID);
+            wfMatchUp = await MatchupsCollection.item(voteEntity.data.matchUpID);
+            const wfVotes = wfMatchUp[`${slot}-votes`];
+
+            votes = wfVotes >= votes ? wfVotes + 1 : votes;
 
             let fields = {}
-            fields[`${slot}-votes`] = ++wfMatchUp[`${slot}-votes`]
+            // If the calculated vote count from Datastore is greater than WebFlow, use it instead.
+            fields[`${slot}-votes`] = votes >= dsVoteCount ? votes : dsVoteCount;
 
             const wfPatchResponse = await MatchupsCollection.patchLiveItem(wfMatchUp._id, {
                 fields: fields

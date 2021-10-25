@@ -1,20 +1,15 @@
-const _ = require("lodash");
+'use strict';
 
 const {DateTime} = require("luxon");
 const {Datastore} = require("@google-cloud/datastore");
 const datastore = new Datastore();
 const transaction = datastore.transaction();
 
-const {createOrUpdateEntity} = require("./entities/helpers");
 const logger = require("./logger");
-const {MatchUpCollection} = require("./webflowclient");
 
 const activeStateKey = datastore.key(["State", "active"]);
-// const activeStateQuery = datastore.createQuery("State").filter("__key__", activeStateKey);
-const archiveStateKey = datastore.key(["Archive", "state"]);
-// const archiveStateQuery = datastore.createQuery("State").filter("__key__", archiveStateKey);
 
-let roundMapInstance; //Singletons y'all.
+let roundMapInstance; //Singletons y'all, well not really.
 
 const isToday = (dateToCheck, today) => {
 
@@ -73,38 +68,6 @@ const RoundMap = async () => {
                 roundId,
                 stories,
             };
-        }
-
-        // Archive and reset each match-up's voter list in Datastore and Webflow if it is a new day.
-        if (newDayFlag) {
-            await createOrUpdateEntity(stateObj, archiveStateKey);
-            lastRoundUpdate = today;
-            for (const entry of Object.entries(stateObj.matchups)) {
-                let [matchUpID, matchUpData] = entry;
-                matchUpData.voters = [];
-                let fields = {
-                    voters: matchUpData.voters.toString(),
-                }
-                const patchResponse = await MatchUpCollection.patchLiveItem(matchUpID, fields);
-                matchUpData["updated-on"] = patchResponse["updated-on"]
-                logger.debug(JSON.stringify(patchResponse));
-                stateObj.matchups[matchUpID] = matchUpData
-            }
-        }
-
-        // Ensure that the existing round map instance is kept up-to-date with Datastore.
-        if (_.isEqual(roundMapInstance.lastRoundUpdate, lastRoundUpdate)) {
-            roundMapInstance.lastRoundUpdate = lastRoundUpdate;
-        }
-        if (_.isEqual(roundMapInstance.matchups, stateObj.matchups)) {
-            roundMapInstance.matchups = stateObj.matchups;
-        }
-        if (roundMapInstance.number !== stateObj.number) {
-            roundMapInstance.number = stateObj.number;
-        }
-
-        if (roundMapInstance.newDayFlag !== newDayFlag) {
-            roundMapInstance.newDayFlag = newDayFlag;
         }
 
         return roundMapInstance;

@@ -1,3 +1,5 @@
+'use strict';
+
 const {getToken} = require('restify-firebase-auth');
 const {Admin} = require("../auth");
 

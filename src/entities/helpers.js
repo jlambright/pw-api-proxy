@@ -1,3 +1,5 @@
+'use strict';
+
 const {Datastore} = require("@google-cloud/datastore");
 const logger = require("../logger");
 const datastore = new Datastore();

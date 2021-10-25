@@ -1,10 +1,12 @@
+'use strict';
+
 require('@google-cloud/debug-agent').start({serviceContext: {enableCanary: false}});
 
 const restify = require("restify");
 const corsMiddleware = require('restify-cors-middleware2')
 
 const {FirebaseAuth} = require("./auth");
-const {Round, Vote} = require("./routes");
+const {Vote} = require("./routes");
 
 const cors = corsMiddleware({
     preflightMaxAge: 50, //Optional,
