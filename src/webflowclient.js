@@ -1,3 +1,5 @@
+'use strict';
+
 const Webflow = require("webflow-api");
 const {buildRequiredArgError} = require("webflow-api/dist/WebflowError");
 
