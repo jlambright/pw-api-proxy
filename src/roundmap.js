@@ -5,6 +5,7 @@ const {Datastore} = require("@google-cloud/datastore");
 const datastore = new Datastore();
 const transaction = datastore.transaction();
 
+const {createOrUpdateEntity} = require("./entities/helpers");
 const logger = require("./logger");
 const {MatchUpCollection} = require("./webflowclient");
 
@@ -20,27 +21,6 @@ const isToday = (dateToCheck, today) => {
     return dateToCheck.hasSame(today, 'day') &&
         dateToCheck.hasSame(today, 'month') &&
         dateToCheck.hasSame(today, 'year');
-}
-
-const createOrUpdateEntity = async (data, key) => {
-    const entity = {
-        key: key,
-        data: data
-    }
-    try {
-        await transaction.run();
-        const [state] = await transaction.get(key);
-        if (state) {
-            await transaction.update(entity);
-        } else {
-            await transaction.save(entity);
-        }
-        return await transaction.commit();
-    } catch (e) {
-        logger.error(`[${key.kind}/${key.name} Transaction Failure]`);
-        await transaction.rollback();
-        throw e;
-    }
 }
 
 const RoundMap = async () => {
@@ -161,7 +141,9 @@ module.exports.update = async (matchUpId, voterList, updatedOn) => {
                 await transaction.commit();
                 roundMapInstance = await RoundMap(state);
             }
-        } else throw new Error("No active state entity was retrieved.");
+        } else {
+            throw new Error("No active state entity was retrieved.");
+        }
     } catch (e) {
         logger.error(`Update failed`);
         await transaction.rollback();
