@@ -7,21 +7,31 @@ const RoundMap = require("../roundmap");
 
 const {voteEntityFactory} = require("../entities/voteEntity");
 
-let roundMap, voteEntity;
+let voteEntity;
+
+const getVoteEntityParamsFromRoundMap = (storyID, roundMap) => {
+    const roundID = roundMap.roundId;
+    const matchUpID = roundMap.stories[storyID].matchID;
+
+    return {
+        matchUpID,
+        roundID,
+
+    }
+}
 
 module.exports.voteCheck = async (req, res, next) => {
     try {
         let storyInRound;
-        roundMap = await RoundMap.build();
-        const sid = req.params.id;
+        const roundMap = await RoundMap.build();
+        const storyID = req.params.id;
 
-        if (sid in roundMap.stories) {
+        if (storyID in roundMap.stories) {
             storyInRound = true;
-            const uid = await getUidFromAuthHeader(req.header('Authorization'));
-            const rid = roundMap.roundId;
+            const userID = await getUidFromAuthHeader(req.header('Authorization'));
             const timestamp = DateTime.now().setZone("Americas/New_York");
-            const mid = roundMap.stories[sid].matchID;
-            voteEntity = voteEntityFactory(mid, rid, sid, timestamp, uid);
+            const {matchUpID, roundID} = getVoteEntityParamsFromRoundMap(storyID, roundMap);
+            voteEntity = voteEntityFactory(matchUpID, roundID, storyID, timestamp, userID);
         } else {
             storyInRound = false;
         }
@@ -41,43 +51,44 @@ module.exports.voteCheck = async (req, res, next) => {
 module.exports.castVote = async (req, res, next) => {
     try {
         const storyID = req.params.id;
-        const uid = await getUidFromAuthHeader(req.header('Authorization'));
-        roundMap = await RoundMap.build();
+        const roundMap = await RoundMap.build();
+        const userID = await getUidFromAuthHeader(req.header('Authorization'));
 
         if (storyID in roundMap.stories) {
-            const storyMatchInfo = roundMap.stories[storyID];
-            const matchupID = storyMatchInfo.matchID;
-
-            let voterIDs = new Set(((storyMatchInfo.hasOwnProperty("voters") && roundMap.newDayFlag) ? storyMatchInfo.voters : []));
-
-            const slot = storyMatchInfo.slot;
-            const matchUpObj = await MatchupsCollection.item(matchupID);
-
-            if (matchUpObj.hasOwnProperty("voters") && !roundMap.newDayFlag) {
-                let parsedVoterIDs = matchUpObj.voters.split(",");
-                parsedVoterIDs.forEach(uid => voterIDs.add(uid));
+            const {matchUpID, roundID} = getVoteEntityParamsFromRoundMap(storyID, roundMap);
+            const slot = roundMap.stories[storyID].slot;
+            if (!voteEntity || voteEntity.data.userID !== userID) {
+                const timestamp = DateTime.now().setZone("Americas/New_York");
+                voteEntity = voteEntityFactory(matchUpID, roundID, storyID, timestamp, userID);
             }
+            await voteEntity.commit();
+            const wfMatchUp = await MatchupsCollection.item(voteEntity.data.matchUpID);
 
-            if (voterIDs.has(uid)) {
-                return res.send({data: {message: "You've already voted for this story."}});
-            } else {
-                voterIDs.add(uid)
-                const voters = [...voterIDs];
-                let fields = {
-                    voters: voters.toString(),
+            let fields = {}
+            fields[`${slot}-votes`] = ++wfMatchUp[`${slot}-votes`]
+
+            const wfPatchResponse = await MatchupsCollection.patchLiveItem(wfMatchUp._id, {
+                fields: fields
+            });
+
+            logger.debug(JSON.stringify(wfPatchResponse));
+            return res.send({
+                data: {
+                    success: true,
+                    message: "vote successful",
+                    roundID,
+                    matchUpID,
+                    storyID,
+                    voteCount: fields[`${slot}-votes`]
                 }
-                fields[`${slot}-votes`] = ++matchUpObj[`${slot}-votes`]
-                const patchResponse = await MatchupsCollection.patchLiveItem(matchupID, {
-                    fields: fields
-                });
-                logger.debug(JSON.stringify(patchResponse));
-                return RoundMap.update(matchupID, voters, new Date(patchResponse["updated-on"])).then(() => {
-                    logger.info(`Voter: ${uid}, Story: ${storyID}`);
-                    return res.send({data: {message: "vote successful"}});
-                }).catch(error => logger.error(error))
-            }
+            });
         } else {
-            return res.send({data: "Story is not in an active round."});
+            return res.send({
+                data: {
+                    success: false,
+                    message: "Story is not in an active round."
+                }
+            });
         }
     } catch (reason) {
         if (reason !== null) logger.error(reason);
