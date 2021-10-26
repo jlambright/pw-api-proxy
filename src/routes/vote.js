@@ -19,7 +19,7 @@ module.exports.voteCheck = async (req, res, next) => {
         if (storyID in stories) {
             inRound = true;
             const userID = await getUidFromAuthHeader(req.header('Authorization'));
-            const timestamp = DateTime.now().setZone("Americas/New_York");
+            const timestamp = DateTime.now().setZone("America/New_York");
             const {matchUpID} = stories[storyID];
             const voteEntity = new VoteEntity(matchUpID, roundID, storyID, timestamp, userID);
             hasVoted = await voteEntity.exists();
@@ -49,7 +49,7 @@ module.exports.castVote = async (req, res, next) => {
 
         if (storyID in stories) {
             const {matchUpID, slot} = stories[storyID];
-            const timestamp = DateTime.now().setZone("Americas/New_York");
+            const timestamp = DateTime.now().setZone("America/New_York");
 
             const voteEntity = new VoteEntity(matchUpID, roundID, storyID, timestamp, userID);
 
