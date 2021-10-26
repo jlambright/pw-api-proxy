@@ -29,6 +29,7 @@ module.exports.VoteEntity = class extends Singleton {
             timestamp,
             votesFor: 0
         };
+        this._entity = undefined;
         const dateString = `${timestamp.month}-${timestamp.day}-${timestamp.year}`;
         this.key = datastore.key(["Round", roundID, "MatchUp", matchUpID, "User", userID, "Vote", dateString]);
     }
@@ -51,11 +52,8 @@ module.exports.VoteEntity = class extends Singleton {
      */
     exists = async () => {
         try {
-            if (!this._instance) {
-                const [entity] = await this.get();
-                this._instance = entity;
-            }
-            return !_.isUndefined(this._instance) || !_.isNull(this._instance);
+            const [entity] = await this.get();
+            return !(_.isUndefined(entity) || _.isNull(entity));
         } catch (e) {
             logger.error(e);
         }
