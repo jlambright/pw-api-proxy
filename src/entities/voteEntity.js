@@ -26,7 +26,8 @@ module.exports.VoteEntity = class extends Singleton {
             matchUpID,
             storyID,
             roundID,
-            timestamp
+            timestamp,
+            votesFor: 0
         };
         const dateString = `${timestamp.month}-${timestamp.day}-${timestamp.year}`;
         this.key = datastore.key(["Round", roundID, "MatchUp", matchUpID, "User", userID, "Vote", dateString]);
