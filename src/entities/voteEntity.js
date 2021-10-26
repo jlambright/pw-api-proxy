@@ -26,11 +26,11 @@ module.exports.VoteEntity = class extends Singleton {
             matchUpID,
             storyID,
             roundID,
-            timestamp,
             votesFor: 0
         };
         this._entity = undefined;
         const dateString = `${timestamp.month}-${timestamp.day}-${timestamp.year}`;
+        this.data.timestamp = timestamp.toJSDate();
         this.key = datastore.key(["Round", roundID, "MatchUp", matchUpID, "User", userID, "Vote", dateString]);
     }
 
@@ -90,7 +90,7 @@ module.exports.calculateMatchUpVotes = async (matchUpID, roundID, storyID) => {
             .filter('roundID', '=', roundID)
             .filter('matchUpID', '=', matchUpID)
             .filter('storyID', '=', storyID)
-            .order('priority', {
+            .order('timestamp', {
                 descending: true,
             });
         const [votes] = await datastore.runQuery(query);
