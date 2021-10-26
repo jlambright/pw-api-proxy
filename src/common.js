@@ -11,7 +11,7 @@ const asyncRetry = async (maxRetries, fn) => {
         return await fn();
     } catch (e) {
         if (maxRetries === 0) {
-            logger.alert(`[Retry Failed After ${maxRetries} Attempts]`);
+            logger.error(`[Retry Failed After ${maxRetries} Attempts]`);
             logger.error(e)
         } else {
             return asyncRetry(maxRetries - 1, fn);
