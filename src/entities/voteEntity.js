@@ -5,6 +5,7 @@ const {Datastore} = require("@google-cloud/datastore");
 const datastore = new Datastore();
 
 const {_} = require("lodash");
+const {uniqid} = require("uniqid");
 
 const {createEntity} = require("./helpers");
 const logger = require("../logger");
@@ -32,7 +33,7 @@ module.exports.VoteEntity = class {
         };
         this.key = datastore.key([
             "User", userID,
-            "Vote", _.uniqueId(`${date}_`)
+            "Vote", `${date}_${uniqid()}`
         ]);
     }
 
