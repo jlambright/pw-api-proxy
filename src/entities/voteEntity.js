@@ -4,6 +4,8 @@ const {DateTime} = require("luxon");
 const {Datastore} = require("@google-cloud/datastore");
 const datastore = new Datastore();
 
+const {_} = require("lodash");
+
 const {createEntity} = require("./helpers");
 const logger = require("../logger");
 const {entity} = require("@google-cloud/datastore/build/src/entity");
@@ -27,7 +29,7 @@ module.exports.VoteEntity = class {
             userID,
             votesFor: 0
         };
-        this.key = datastore.key(["Round", roundID, "MatchUp", matchUpID, "User", userID, "Vote"]);
+        this.key = datastore.key(["Round", roundID, "MatchUp", matchUpID, "User", userID, "Vote", _.uniqueId()]);
     }
 
     /**
