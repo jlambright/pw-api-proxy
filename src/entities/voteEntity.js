@@ -6,7 +6,6 @@ const datastore = new Datastore();
 
 const {createEntity} = require("./helpers");
 const logger = require("../logger");
-const _ = require("lodash");
 const {entity} = require("@google-cloud/datastore/build/src/entity");
 
 module.exports.VoteEntity = class {
@@ -49,15 +48,17 @@ module.exports.VoteEntity = class {
      */
     exists = async () => {
         try {
+            const ancestorKey = datastore.key([
+                "Round", this.data.roundID,
+                "MatchUp", this.data.matchUpID,
+                "User", this.data.userID]);
+
             const query = datastore
-                .createQuery('Vote')
+                .createQuery('Vote').hasAncestor(ancestorKey)
                 .filter("date", "=", this.data.date)
-                .filter('roundID', '=', this.data.roundID)
-                .filter('matchUpID', '=', this.data.matchUpID)
-                .filter('storyID', '=', this.data.storyID)
-                .filter('userID', '=', this.data.userID);
-            const [vote] = await datastore.runQuery(query);
-            return !_.isUndefined(vote);
+
+            const [votes] = await datastore.runQuery(query);
+            return (votes.length > 0);
         } catch (e) {
             logger.error(e);
         }
