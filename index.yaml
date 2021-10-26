@@ -6,4 +6,12 @@ indexes:
       - name: storyID
       - name: timestamp
         direction: desc
+
+  - kind: Vote
+    properties:
+      - name: date
+      - name: matchUpID
+      - name: roundID
+      - name: storyID
+      - name: userID
         
