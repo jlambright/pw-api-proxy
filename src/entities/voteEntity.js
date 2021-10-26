@@ -1,6 +1,6 @@
 'use strict';
 
-const {DateTime, Formats} = require("luxon");
+const {DateTime} = require("luxon");
 const {Datastore} = require("@google-cloud/datastore");
 const datastore = new Datastore();
 
@@ -22,7 +22,7 @@ module.exports.VoteEntity = class extends Singleton {
     constructor(matchUpID, roundID, storyID, timestamp, userID) {
         super();
         this.data = {
-            date: timestamp.toLocaleString(Formats.DATE_MED),
+            date: timestamp.toLocaleString(DateTime.DATE_MED),
             matchUpID,
             roundID,
             storyID,
