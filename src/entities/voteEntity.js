@@ -52,8 +52,8 @@ module.exports.VoteEntity = class extends Singleton {
      */
     exists = async () => {
         try {
-            const [entity] = await this.get();
-            return !(_.isUndefined(entity) || _.isNull(entity));
+            if (_.isUndefined(this._entity)) await this.get();
+            return !_.isUndefined(this._entity);
         } catch (e) {
             logger.error(e);
         }
@@ -67,9 +67,9 @@ module.exports.VoteEntity = class extends Singleton {
         try {
             if (!this._instance) {
                 const [entity] = await datastore.get(this.key);
-                this._instance = entity;
+                this._entity = entity;
             }
-            return this._instance;
+            return this._entity;
         } catch (e) {
             logger.error(e);
         }
