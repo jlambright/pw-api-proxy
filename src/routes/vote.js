@@ -7,41 +7,30 @@ const logger = require("../logger");
 const {MatchupsCollection} = require("../webflowclient");
 const RoundMap = require("../roundmap");
 
-const {voteEntityFactory, calculateMatchUpVotes} = require("../entities/voteEntity");
-
-let voteEntity;
-
-const getVoteEntityParamsFromRoundMap = (storyID, roundMap) => {
-    const roundID = roundMap.roundId;
-    const matchUpID = roundMap.stories[storyID].matchID;
-
-    return {
-        matchUpID,
-        roundID,
-
-    }
-}
+const {VoteEntity, calculateMatchUpVotes} = require("../entities/voteEntity");
 
 module.exports.voteCheck = async (req, res, next) => {
     try {
-        let storyInRound;
-        const roundMap = await RoundMap.build();
+        let hasVoted, inRound;
+        const {stories, roundID} = await RoundMap.build();
         const storyID = req.params.id;
 
-        if (storyID in roundMap.stories) {
-            storyInRound = true;
+        if (storyID in stories) {
+            inRound = true;
             const userID = await getUidFromAuthHeader(req.header('Authorization'));
             const timestamp = DateTime.now().setZone("Americas/New_York");
-            const {matchUpID, roundID} = getVoteEntityParamsFromRoundMap(storyID, roundMap);
-            voteEntity = voteEntityFactory(matchUpID, roundID, storyID, timestamp, userID);
+            const {matchUpID} = stories[storyID];
+            const voteEntity = new VoteEntity(matchUpID, roundID, storyID, timestamp, userID);
+            hasVoted = await voteEntity.exists();
         } else {
-            storyInRound = false;
+            hasVoted = false;
+            inRound = false;
         }
 
         return res.send({
             data: {
-                hasVoted: await voteEntity.exists(),
-                inRound: storyInRound,
+                hasVoted,
+                inRound,
             }
         })
 
@@ -57,25 +46,29 @@ module.exports.castVote = async (req, res, next) => {
         const userID = await getUidFromAuthHeader(req.header('Authorization'));
 
         if (storyID in roundMap.stories) {
-            const {matchUpID, roundID} = getVoteEntityParamsFromRoundMap(storyID, roundMap);
-            const slot = roundMap.stories[storyID].slot;
-            if (!voteEntity || voteEntity.data.userID !== userID) {
-                const timestamp = DateTime.now().setZone("Americas/New_York");
-                voteEntity = voteEntityFactory(matchUpID, roundID, storyID, timestamp, userID);
-            }
-            let wfMatchUp = await MatchupsCollection.item(voteEntity.data.matchUpID);
-            let votes = ++wfMatchUp[`${slot}-votes`]
-            voteEntity.data.votesFor = votes
-            await voteEntity.commit();
-            const dsVoteCount = await calculateMatchUpVotes(matchUpID, roundID, storyID);
-            wfMatchUp = await MatchupsCollection.item(voteEntity.data.matchUpID);
-            const wfVotes = wfMatchUp[`${slot}-votes`];
+            const {stories, roundID} = roundMap;
+            const {matchUpID, slot} = stories[storyID];
+            const timestamp = DateTime.now().setZone("Americas/New_York");
 
-            votes = wfVotes >= votes ? wfVotes + 1 : votes;
+            const voteEntity = new VoteEntity(matchUpID, roundID, storyID, timestamp, userID);
+
+            let wfMatchUp = await MatchupsCollection.item(matchUpID);
+            let votesCheckOne = ++wfMatchUp[`${slot}-votes`]
+            voteEntity.data.votesFor = votesCheckOne
+            await voteEntity.commit();
+
+            const dsVoteCount = await calculateMatchUpVotes(matchUpID, roundID, storyID);
+
+            wfMatchUp = await MatchupsCollection.item(voteEntity.data.matchUpID);
+            const votesCheckTwo = wfMatchUp[`${slot}-votes`];
+
+            // Check for votes that occurred during processing.
+            const wfVotes = votesCheckTwo >= votesCheckOne ? votesCheckTwo + 1 : votesCheckOne;
+            // Go with the greater between the last Datastore record vote total and WebFlow.
+            const finalVotes = wfVotes >= dsVoteCount ? wfVotes : dsVoteCount;
 
             let fields = {}
-            // If the calculated vote count from Datastore is greater than WebFlow, use it instead.
-            fields[`${slot}-votes`] = votes >= dsVoteCount ? votes : dsVoteCount;
+            fields[`${slot}-votes`] = finalVotes;
 
             const wfPatchResponse = await MatchupsCollection.patchLiveItem(wfMatchUp._id, {
                 fields: fields
