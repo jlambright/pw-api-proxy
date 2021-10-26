@@ -4,13 +4,12 @@ const {DateTime} = require("luxon");
 const {Datastore} = require("@google-cloud/datastore");
 const datastore = new Datastore();
 
-const {Singleton} = require("../common");
 const {createEntity} = require("./helpers");
 const logger = require("../logger");
 const _ = require("lodash");
 const {entity} = require("@google-cloud/datastore/build/src/entity");
 
-module.exports.VoteEntity = class extends Singleton {
+module.exports.VoteEntity = class {
 
     /**
      * @param {string|number|entity.Int|string} userID
@@ -20,7 +19,6 @@ module.exports.VoteEntity = class extends Singleton {
      * @param {string} roundID
      */
     constructor(matchUpID, roundID, storyID, timestamp, userID) {
-        super();
         this.data = {
             date: timestamp.toLocaleString(DateTime.DATE_MED),
             matchUpID,
