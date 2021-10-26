@@ -7,16 +7,17 @@ const logger = require("./logger");
  * @return {Promise<*|*|*|undefined>}
  */
 const asyncRetry = async (maxRetries, fn) => {
-    try {
-        return await fn();
-    } catch (e) {
-        if (maxRetries === 0) {
-            logger.error(`[Retry Failed After ${maxRetries} Attempts]`);
-            logger.error(e)
-        } else {
-            return asyncRetry(maxRetries - 1, fn);
+
+    for (let i = 0; i < maxRetries; i++) {
+        try {
+            return await fn();
+        } catch (err) {
+            if (i === maxRetries) {
+                logger.error(err);
+            }
         }
     }
+    logger.error(`[Retry Failed After ${maxRetries} Attempts]`);
 }
 module.exports.asyncRetry = asyncRetry;
 
