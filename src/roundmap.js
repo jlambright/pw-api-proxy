@@ -4,7 +4,7 @@ const datastore = new Datastore();
 const transaction = datastore.transaction();
 
 const NodeCache = require("node-cache");
-const cache = new NodeCache({stdTTL: 100, checkperiod: 120});
+const cache = new NodeCache({stdTTL: 86400}); // TTL of 1 day.
 
 const logger = require("./logger");
 const {asyncRetry} = require("./common");
