@@ -31,8 +31,6 @@ module.exports.VoteEntity = class {
             votesFor: 0
         };
         this.key = datastore.key([
-            "Round", roundID,
-            "MatchUp", matchUpID,
             "User", userID,
             "Vote", _.uniqueId(`${date}_`)
         ]);
@@ -57,8 +55,6 @@ module.exports.VoteEntity = class {
     exists = async () => {
         try {
             const ancestorKey = datastore.key([
-                "Round", this.data.roundID,
-                "MatchUp", this.data.matchUpID,
                 "User", this.data.userID]);
 
             const query = datastore
