@@ -69,7 +69,7 @@ const RoundMap = async () => {
 
 module.exports.build = async () => {
     try {
-        return await asyncRetry(2, RoundMap);
+        return await asyncRetry(1, RoundMap);
     } catch (err) {
         logger.error(JSON.stringify(err));
     }
