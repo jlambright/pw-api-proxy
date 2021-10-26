@@ -33,3 +33,4 @@ indexes:
       - name: storyID
       - name: timestamp
         direction: desc
+        
