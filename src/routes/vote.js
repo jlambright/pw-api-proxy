@@ -12,7 +12,8 @@ const {VoteEntity, calculateMatchUpVotes} = require("../entities/voteEntity");
 module.exports.voteCheck = async (req, res, next) => {
     try {
         let hasVoted, inRound;
-        const {stories, roundID} = await RoundMap.build();
+        const roundMap = await RoundMap.build();
+        const {stories, roundID} = roundMap;
         const storyID = req.params.id;
 
         if (storyID in stories) {
@@ -43,10 +44,10 @@ module.exports.castVote = async (req, res, next) => {
     try {
         const storyID = req.params.id;
         const roundMap = await RoundMap.build();
+        const {stories, roundID} = roundMap;
         const userID = await getUidFromAuthHeader(req.header('Authorization'));
 
-        if (storyID in roundMap.stories) {
-            const {stories, roundID} = roundMap;
+        if (storyID in stories) {
             const {matchUpID, slot} = stories[storyID];
             const timestamp = DateTime.now().setZone("Americas/New_York");
 
