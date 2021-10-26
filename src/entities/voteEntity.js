@@ -4,7 +4,6 @@ const {DateTime} = require("luxon");
 const {Datastore} = require("@google-cloud/datastore");
 const datastore = new Datastore();
 
-const {_} = require("lodash");
 const {uniqid} = require("uniqid");
 
 const {createEntity} = require("./helpers");
