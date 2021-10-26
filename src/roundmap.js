@@ -3,6 +3,9 @@ const {Datastore} = require("@google-cloud/datastore");
 const datastore = new Datastore();
 const transaction = datastore.transaction();
 
+const NodeCache = require("node-cache");
+const cache = new NodeCache({stdTTL: 100, checkperiod: 120});
+
 const logger = require("./logger");
 const {asyncRetry} = require("./common");
 const {MatchupsCollection} = require("./webflowclient");
@@ -15,52 +18,57 @@ const {MatchupsCollection} = require("./webflowclient");
  */
 const RoundMap = async () => {
     try {
-        const activeStateKey = datastore.key(["State", "active"]);
-        await transaction.run();
-        const [stateObj] = await transaction.get(activeStateKey);
+        let roundMap = await cache.get("roundMap");
 
-        // Determining if it is new day since last vote.
-        const today = DateTime.now().setZone('America/New_York');
-        const lastUpdateData = stateObj.hasOwnProperty("lastRoundUpdate") ? stateObj.lastRoundUpdate : today;
-        let lastRoundUpdate = DateTime.fromJSDate(lastUpdateData).setZone('America/New_York');
+        if (!roundMap) {
+            const activeStateKey = datastore.key(["State", "active"]);
+            await transaction.run();
+            const [stateObj] = await transaction.get(activeStateKey);
 
-        let matchUps = {};
-        let roundID;
-        let stories = {};
+            const today = DateTime.now().setZone('America/New_York');
+            const lastUpdateData = stateObj.hasOwnProperty("lastRoundUpdate") ? stateObj.lastRoundUpdate : today;
+            let lastRoundUpdate = DateTime.fromJSDate(lastUpdateData).setZone('America/New_York');
 
-        for (const entry of Object.entries(stateObj.matchups)) {
-            const [key, value] = entry;
+            let matchUps = {};
+            let roundID;
+            let stories = {};
 
-            if (!roundID) {
-                roundID = (await MatchupsCollection.item(key))["round-id"];
+            for (const entry of Object.entries(stateObj.matchups)) {
+                const [key, value] = entry;
+
+                if (!roundID) {
+                    roundID = (await MatchupsCollection.item(key))["round-id"];
+                }
+
+                const aStoryID = value["a-story"];
+                const bStoryID = value["b-story"];
+                const updatedOn = DateTime.fromJSDate(value["updated-on"]).setZone('America/New_York');
+                matchUps[key] = {
+                    "a-story": aStoryID,
+                    "b-story": bStoryID,
+                    "updated-on": updatedOn
+                };
+
+                stories[aStoryID] = {
+                    matchUpID: key,
+                    slot: "a"
+                };
+                stories[bStoryID] = {
+                    matchUpID: key,
+                    slot: "b"
+                }
             }
-
-            const aStoryID = value["a-story"];
-            const bStoryID = value["b-story"];
-            const updatedOn = DateTime.fromJSDate(value["updated-on"]).setZone('America/New_York');
-            matchUps[key] = {
-                "a-story": aStoryID,
-                "b-story": bStoryID,
-                "updated-on": updatedOn
+            roundMap = {
+                lastRoundUpdate,
+                matchUps,
+                number: stateObj.number, // This is actually a UUID from Webflow, for the "number" field of the match-up.
+                roundID,
+                stories,
             };
-
-            stories[aStoryID] = {
-                matchUpID: key,
-                slot: "a"
-            };
-            stories[bStoryID] = {
-                matchUpID: key,
-                slot: "b"
-            }
+            cache.set("roundMap", roundMap);
         }
 
-        return {
-            lastRoundUpdate,
-            matchUps,
-            number: stateObj.number, // This is actually a UUID from Webflow, for the "number" field of the match-up.
-            roundID,
-            stories,
-        };
+        return roundMap;
     } catch (e) {
         logger.error("[RoundMap Creation Failure]");
         throw e;
