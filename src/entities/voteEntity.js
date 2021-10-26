@@ -20,8 +20,9 @@ module.exports.VoteEntity = class {
      * @param {string} roundID
      */
     constructor(matchUpID, roundID, storyID, timestamp, userID) {
+        const date = timestamp.toLocaleString(DateTime.DATE_MED);
         this.data = {
-            date: timestamp.toLocaleString(DateTime.DATE_MED),
+            date,
             matchUpID,
             roundID,
             storyID,
@@ -29,7 +30,12 @@ module.exports.VoteEntity = class {
             userID,
             votesFor: 0
         };
-        this.key = datastore.key(["Round", roundID, "MatchUp", matchUpID, "User", userID, "Vote", _.uniqueId()]);
+        this.key = datastore.key([
+            "Round", roundID,
+            "MatchUp", matchUpID,
+            "User", userID,
+            "Vote", _.uniqueId(`${date}_`)
+        ]);
     }
 
     /**
