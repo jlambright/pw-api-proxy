@@ -57,24 +57,25 @@ module.exports.castVote = async (req, res, next) => {
             let wfMatchUp = await MatchupsCollection.item(matchUpID);
             let votesCheckOne = ++wfMatchUp[`${slot}-votes`]
             voteEntity.data.votesFor = votesCheckOne
-            await asyncRetry(2, voteEntity.commit());
+            await asyncRetry(1, voteEntity.commit);
 
-            const dsVoteCount = await asyncRetry(2, calculateMatchUpVotes(matchUpID, roundID, storyID));
+            const dsVoteCount = await calculateMatchUpVotes(matchUpID, roundID, storyID);
 
             wfMatchUp = await MatchupsCollection.item(voteEntity.data.matchUpID);
             const votesCheckTwo = wfMatchUp[`${slot}-votes`];
 
             // Check for votes that occurred during processing.
-            const wfVotes = votesCheckTwo >= votesCheckOne ? votesCheckTwo + 1 : votesCheckOne;
+            let wfVotes = votesCheckTwo > votesCheckOne ? votesCheckTwo : votesCheckOne;
+            ++wfVotes;
             // Go with the greater between the last Datastore record vote total and WebFlow.
             const finalVotes = wfVotes >= dsVoteCount ? wfVotes : dsVoteCount;
 
             let fields = {}
             fields[`${slot}-votes`] = finalVotes;
 
-            const wfPatchResponse = await asyncRetry(1, MatchupsCollection.patchLiveItem(wfMatchUp._id, {
+            const wfPatchResponse = await MatchupsCollection.patchLiveItem(wfMatchUp._id, {
                 fields: fields
-            }));
+            });
 
             logger.debug(JSON.stringify(wfPatchResponse));
             return res.send({

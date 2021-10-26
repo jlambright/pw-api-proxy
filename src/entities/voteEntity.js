@@ -38,11 +38,13 @@ module.exports.VoteEntity = class {
 
     /**
      *
-     * @return {Promise<{response: google.datastore.v1.ICommitResponse[], conflict: boolean}>}
+     * @return {Promise<Object|{response: google.datastore.v1.ICommitResponse[], conflict: boolean}>}
      */
     commit = async () => {
         try {
-            return await createEntity({key: this.key, data: this.data});
+            if (!await this.exists()) {
+                return await createEntity({key: this.key, data: this.data});
+            } else return await this.get();
         } catch (e) {
             logger.error(e);
         }
