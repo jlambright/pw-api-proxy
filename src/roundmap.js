@@ -4,6 +4,7 @@ const datastore = new Datastore();
 const transaction = datastore.transaction();
 
 const logger = require("./logger");
+const {asyncRetry} = require("./common");
 const {MatchupsCollection} = require("./webflowclient");
 
 
@@ -68,7 +69,7 @@ const RoundMap = async () => {
 
 module.exports.build = async () => {
     try {
-        return await RoundMap();
+        return await asyncRetry(2, RoundMap);
     } catch (err) {
         logger.error(JSON.stringify(err));
     }

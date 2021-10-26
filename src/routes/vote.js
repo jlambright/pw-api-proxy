@@ -8,6 +8,7 @@ const {MatchupsCollection} = require("../webflowclient");
 const RoundMap = require("../roundmap");
 
 const {VoteEntity, calculateMatchUpVotes} = require("../entities/voteEntity");
+const {asyncRetry} = require("../common");
 
 module.exports.voteCheck = async (req, res, next) => {
     try {
@@ -56,9 +57,9 @@ module.exports.castVote = async (req, res, next) => {
             let wfMatchUp = await MatchupsCollection.item(matchUpID);
             let votesCheckOne = ++wfMatchUp[`${slot}-votes`]
             voteEntity.data.votesFor = votesCheckOne
-            await voteEntity.commit();
+            await asyncRetry(2, voteEntity.commit());
 
-            const dsVoteCount = await calculateMatchUpVotes(matchUpID, roundID, storyID);
+            const dsVoteCount = await asyncRetry(2, calculateMatchUpVotes(matchUpID, roundID, storyID));
 
             wfMatchUp = await MatchupsCollection.item(voteEntity.data.matchUpID);
             const votesCheckTwo = wfMatchUp[`${slot}-votes`];
@@ -71,9 +72,9 @@ module.exports.castVote = async (req, res, next) => {
             let fields = {}
             fields[`${slot}-votes`] = finalVotes;
 
-            const wfPatchResponse = await MatchupsCollection.patchLiveItem(wfMatchUp._id, {
+            const wfPatchResponse = await asyncRetry(1, MatchupsCollection.patchLiveItem(wfMatchUp._id, {
                 fields: fields
-            });
+            }));
 
             logger.debug(JSON.stringify(wfPatchResponse));
             return res.send({
