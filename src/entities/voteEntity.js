@@ -1,6 +1,6 @@
 'use strict';
 
-const {DateTime} = require("luxon");
+const {DateTime, Formats} = require("luxon");
 const {Datastore} = require("@google-cloud/datastore");
 const datastore = new Datastore();
 
@@ -22,16 +22,15 @@ module.exports.VoteEntity = class extends Singleton {
     constructor(matchUpID, roundID, storyID, timestamp, userID) {
         super();
         this.data = {
-            userID,
+            date: timestamp.toLocaleString(Formats.DATE_MED),
             matchUpID,
-            storyID,
             roundID,
+            storyID,
+            timestamp: timestamp.toJSDate(),
+            userID,
             votesFor: 0
         };
-        this._entity = undefined;
-        const dateString = `${timestamp.month}-${timestamp.day}-${timestamp.year}`;
-        this.data.timestamp = timestamp.toJSDate();
-        this.key = datastore.key(["Round", roundID, "MatchUp", matchUpID, "User", userID, "Vote", dateString]);
+        this.key = datastore.key(["Round", roundID, "MatchUp", matchUpID, "User", userID, "Vote"]);
     }
 
     /**
@@ -52,8 +51,15 @@ module.exports.VoteEntity = class extends Singleton {
      */
     exists = async () => {
         try {
-            if (_.isUndefined(this._entity)) await this.get();
-            return !_.isUndefined(this._entity);
+            const query = datastore
+                .createQuery('Vote')
+                .filter("date", "=", this.data.date)
+                .filter('roundID', '=', this.data.roundID)
+                .filter('matchUpID', '=', this.data.matchUpID)
+                .filter('storyID', '=', this.data.storyID)
+                .filter('userID', '=', this.data.userID);
+            const [vote] = await datastore.runQuery(query);
+            return !_.isUndefined(vote);
         } catch (e) {
             logger.error(e);
         }
@@ -65,11 +71,8 @@ module.exports.VoteEntity = class extends Singleton {
      */
     get = async () => {
         try {
-            if (!this._instance) {
-                const [entity] = await datastore.get(this.key);
-                this._entity = entity;
-            }
-            return this._entity;
+            const [entity] = await datastore.get(this.key);
+            return entity;
         } catch (e) {
             logger.error(e);
         }
