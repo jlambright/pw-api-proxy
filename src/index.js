@@ -5,7 +5,7 @@ require('@google-cloud/debug-agent').start({serviceContext: {enableCanary: false
 const restify = require("restify");
 const corsMiddleware = require('restify-cors-middleware2')
 
-const {FirebaseAuth} = require("./auth");
+const {firebaseAuth} = require("./pwFirebase");
 const {Vote} = require("./routes");
 
 const cors = corsMiddleware({
@@ -35,7 +35,7 @@ const server = restify.createServer({
 
 server.pre(cors.preflight);
 server.use(cors.actual);
-server.use(FirebaseAuth);
+server.use(firebaseAuth);
 server.use(restify.plugins.acceptParser(server.acceptable));
 server.use(restify.plugins.queryParser());
 server.use(restify.plugins.bodyParser());

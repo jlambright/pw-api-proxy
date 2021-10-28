@@ -21,21 +21,19 @@ module.exports.createEntity = async ({data, key}) => {
     }
     try {
         let conflict = false;
-        await transaction.run();
-        const [entityResponse] = await transaction.get(key);
+        let response = null;
+        const [entityResponse] = await datastore.get(key);
         if (entityResponse) {
             conflict = true;
         } else {
-            await transaction.insert(entity);
+            response = await datastore.insert(entity);
         }
-        const response = await transaction.commit();
         return {
             conflict,
             response
         }
     } catch (e) {
-        logger.error(`[${key.kind}/${key.name} Transaction Failure]`);
-        await transaction.rollback();
+        logger.error(`[${key.kind}/${key.name} Transaction Failure]`, entity.data);
         throw e;
     }
 }

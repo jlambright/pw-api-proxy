@@ -4,13 +4,12 @@ const {DateTime} = require("luxon");
 const {Datastore} = require("@google-cloud/datastore");
 const datastore = new Datastore();
 
-const uniqid = require("uniqid");
-
-const {createEntity} = require("./helpers");
 const logger = require("../logger");
 const {entity} = require("@google-cloud/datastore/build/src/entity");
+const {BaseEntity} = require("./BaseEntity");
+const uniqid = require("uniqid");
 
-module.exports.VoteEntity = class {
+module.exports.VoteEntity = class extends BaseEntity {
 
     /**
      * @param {string|number|entity.Int|string} userID
@@ -20,8 +19,9 @@ module.exports.VoteEntity = class {
      * @param {string} roundID
      */
     constructor(matchUpID, roundID, storyID, timestamp, userID) {
-        const date = timestamp.toLocaleString(DateTime.DATE_MED);
-        this.data = {
+        const ancestor = datastore.key(["User", userID]);
+        const date = `${timestamp.month}_${timestamp.day}_${timestamp.year}`;
+        const data = {
             date,
             matchUpID,
             roundID,
@@ -30,24 +30,8 @@ module.exports.VoteEntity = class {
             userID,
             votesFor: 0
         };
-        this.key = datastore.key([
-            "User", userID,
-            "Vote", `${date}_${uniqid()}`
-        ]);
-    }
-
-    /**
-     *
-     * @return {Promise<Object|{response: google.datastore.v1.ICommitResponse[], conflict: boolean}>}
-     */
-    commit = async () => {
-        try {
-            if (!await this.exists()) {
-                return await createEntity({key: this.key, data: this.data});
-            } else return await this.get();
-        } catch (e) {
-            logger.error(e);
-        }
+        const key = datastore.key(["User", userID, "Vote", `${date}_${uniqid()}`])
+        super("Vote", data, {ancestor, key});
     }
 
     /**
@@ -56,28 +40,13 @@ module.exports.VoteEntity = class {
      */
     exists = async () => {
         try {
-            const ancestorKey = datastore.key([
-                "User", this.data.userID]);
 
             const query = datastore
-                .createQuery('Vote').hasAncestor(ancestorKey)
+                .createQuery(this.kind).hasAncestor(this.ancestor)
                 .filter("date", "=", this.data.date)
 
             const [votes] = await datastore.runQuery(query);
             return (votes.length > 0);
-        } catch (e) {
-            logger.error(e);
-        }
-    }
-
-    /**
-     *
-     * @return {Promise<object>}
-     */
-    get = async () => {
-        try {
-            const [entity] = await datastore.get(this.key);
-            return entity;
         } catch (e) {
             logger.error(e);
         }
