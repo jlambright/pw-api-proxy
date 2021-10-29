@@ -10,7 +10,7 @@ const corsMiddleware = require('restify-cors-middleware2')
 
 const cache = require("./cache");
 const {firebaseAuth} = require("./pwFirebase");
-const {Vote} = require("./routes");
+const {Vote, Logs} = require("./routes");
 
 const origins = [
     'https://app.purplewallstories.com',
@@ -44,7 +44,7 @@ const throttleConfig = {
 };
 
 const originCheck = (req, res, next) => {
-    const ref = req.headers.referer;
+    const ref = req.get('Referrer') || req.headers.referrer || req.headers.referer
     if (ref) {
         const urlRef = new URL(ref);
         if (origins.includes(urlRef.origin)) {
@@ -68,6 +68,7 @@ server.use(queryParser());
 server.use(bodyParser());
 server.use(originCheck());
 
+server.post("/logs", Logs.createLog);
 server.get("/match-up/:id", Vote.voteCount);
 server.get(("/vote/:id"), Vote.voteCheck);
 server.post("/vote/:id", Vote.castVote);

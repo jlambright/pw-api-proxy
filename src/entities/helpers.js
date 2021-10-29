@@ -2,6 +2,7 @@
 
 const {Datastore} = require("@google-cloud/datastore");
 const logger = require("../logger");
+const {asyncRetry} = require("../common");
 const datastore = new Datastore();
 const transaction = datastore.transaction();
 
@@ -26,7 +27,7 @@ module.exports.createEntity = async ({data, key}) => {
         if (entityResponse) {
             conflict = true;
         } else {
-            response = await datastore.insert(entity);
+            response = await asyncRetry(3, datastore.insert(entity));
         }
         return {
             conflict,

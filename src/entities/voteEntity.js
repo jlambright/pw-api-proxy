@@ -21,7 +21,7 @@ module.exports.VoteEntity = class extends BaseEntity {
      * @param {string} roundID
      */
     constructor(matchUpID, roundID, storyID, timestamp, userID) {
-        const ancestor = datastore.key(["User", userID]);
+        const ancestor = ["User", userID];
         const date = `${timestamp.month}_${timestamp.day}_${timestamp.year}`;
         const data = {
             date,
@@ -32,7 +32,7 @@ module.exports.VoteEntity = class extends BaseEntity {
             userID,
             votesFor: 0
         };
-        const key = datastore.key(["User", userID, "Vote", `${date}_${uniqid()}`])
+        const key = ["Vote", `${date}_${uniqid()}`]
         super("Vote", data, {ancestor, key});
     }
 
@@ -45,7 +45,7 @@ module.exports.VoteEntity = class extends BaseEntity {
 
             const query = datastore
                 .createQuery(this.kind).hasAncestor(this.ancestor)
-                .filter("date", "=", this.data.date)
+                .filter("date", "=", this.data.date).select("__key__");
 
             const [votes] = await datastore.runQuery(query);
             return (votes.length > 0);
