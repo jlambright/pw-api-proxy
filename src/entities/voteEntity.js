@@ -3,11 +3,13 @@
 const {DateTime} = require("luxon");
 const {Datastore} = require("@google-cloud/datastore");
 const datastore = new Datastore();
+const uniqid = require("uniqid");
 
 const logger = require("../logger");
 const {entity} = require("@google-cloud/datastore/build/src/entity");
 const {BaseEntity} = require("./BaseEntity");
-const uniqid = require("uniqid");
+const RoundMap = require("../roundmap");
+const {calculateVotesByStoryID} = require("./voteEntity");
 
 module.exports.VoteEntity = class extends BaseEntity {
 
@@ -60,7 +62,7 @@ module.exports.VoteEntity = class extends BaseEntity {
  * @param {string} storyID
  * @return {Promise<number>}
  */
-module.exports.calculateMatchUpVotes = async (matchUpID, roundID, storyID) => {
+module.exports.calculateVotesByStoryID = async (matchUpID, roundID, storyID) => {
     try {
         const query = datastore
             .createQuery('Vote')
@@ -69,9 +71,36 @@ module.exports.calculateMatchUpVotes = async (matchUpID, roundID, storyID) => {
             .filter('storyID', '=', storyID)
             .order('timestamp', {
                 descending: true,
-            });
+            }).select("__key__");
         const [votes] = await datastore.runQuery(query);
         return votes.length;
+    } catch (e) {
+        logger.error(e);
+    }
+}
+
+/**
+ *
+ * @param {string} matchUpID
+ * @param {string} roundID
+ * @return {Promise<{aVoteCount: number, bVoteCount: number}>}
+ */
+module.exports.calculateVotesByMatchUpID = async (matchUpID, roundID) => {
+
+    try {
+        const roundMap = await RoundMap.build();
+        const matchUp = roundMap.matchUps[matchUpID];
+        const aStoryID = matchUp["a-story"];
+        const bStoryID = matchUp["b-story"];
+
+        const aVoteCount = await calculateVotesByStoryID(matchUpID, roundID, aStoryID);
+        const bVoteCount = await calculateVotesByStoryID(matchUpID, roundID, bStoryID);
+
+        return {
+            aVoteCount,
+            bVoteCount
+        }
+
     } catch (e) {
         logger.error(e);
     }

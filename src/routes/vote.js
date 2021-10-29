@@ -7,7 +7,7 @@ const logger = require("../logger");
 const {MatchupsCollection} = require("../webflowclient");
 const RoundMap = require("../roundmap");
 
-const {VoteEntity, calculateMatchUpVotes} = require("../entities/voteEntity");
+const {VoteEntity, calculateVotesByMatchUpID, calculateVotesByStoryID} = require("../entities/voteEntity");
 const {asyncRetry} = require("../common");
 
 module.exports.voteCheck = async (req, res, next) => {
@@ -41,6 +41,29 @@ module.exports.voteCheck = async (req, res, next) => {
     }
 }
 
+/**
+ *
+ * @param req
+ * @param res
+ * @param next
+ * @return {Promise<*>}
+ */
+module.exports.voteCount = async (req, res, next) => {
+    try {
+        const roundMap = await RoundMap.build();
+        const matchUpID = req.params.id;
+
+        const data = await calculateVotesByMatchUpID(matchUpID, roundMap.id);
+
+        return res.send({
+            data
+        })
+
+    } catch (reason) {
+        if (reason !== null) logger.error(reason);
+    }
+}
+
 module.exports.castVote = async (req, res, next) => {
     try {
         const storyID = req.params.id;
@@ -62,7 +85,7 @@ module.exports.castVote = async (req, res, next) => {
                 const dsCommitResults = await asyncRetry(2, voteEntity.commit);
 
                 if (!dsCommitResults.conflict && dsCommitResults.response) {
-                    const dsVoteCount = await calculateMatchUpVotes(matchUpID, roundID, storyID);
+                    const dsVoteCount = await calculateVotesByStoryID(matchUpID, roundID, storyID);
 
                     wfMatchUp = await MatchupsCollection.item(voteEntity.data.matchUpID);
                     const votesCheckTwo = wfMatchUp[`${slot}-votes`];
