@@ -7,7 +7,7 @@ const cache = require("./cache");
 
 const logger = require("./logger");
 const {asyncRetry} = require("./common");
-const {MatchupsCollection} = require("./webflowclient");
+const {MatchUpsCollection} = require("./webflowclient");
 
 
 /**
@@ -36,7 +36,7 @@ const RoundMap = async () => {
                 const [key, value] = entry;
 
                 if (!roundID) {
-                    roundID = (await MatchupsCollection.item(key))["round-id"];
+                    roundID = (await MatchUpsCollection.item(key))["round-id"];
                 }
 
                 const aStoryID = value["a-story"];

@@ -4,7 +4,7 @@ const {DateTime} = require("luxon");
 
 const {getUidFromAuthHeader} = require("./helpers");
 const logger = require("../logger");
-const {MatchupsCollection} = require("../webflowclient");
+const {MatchUpsCollection} = require("../webflowclient");
 const RoundMap = require("../roundmap");
 
 const {VoteEntity, calculateVotesByStoryID} = require("../entities/voteEntity");
@@ -60,7 +60,7 @@ module.exports.castVote = async (req, res, next) => {
             const voteEntity = new VoteEntity(matchUpID, roundID, storyID, timestamp, userID);
 
             if (!await voteEntity.exists()) {
-                let wfMatchUp = await MatchupsCollection.item(matchUpID);
+                let wfMatchUp = await MatchUpsCollection.item(matchUpID);
                 let votesCheckOne = wfMatchUp[`${slot}-votes`]
                 voteEntity.data.votesFor = votesCheckOne
 
@@ -69,7 +69,7 @@ module.exports.castVote = async (req, res, next) => {
                 if (!dsCommitResults.conflict && dsCommitResults.response) {
                     const dsVoteCount = await calculateVotesByStoryID(matchUpID, roundID, storyID);
 
-                    wfMatchUp = await MatchupsCollection.item(voteEntity.data.matchUpID);
+                    wfMatchUp = await MatchUpsCollection.item(voteEntity.data.matchUpID);
                     const votesCheckTwo = wfMatchUp[`${slot}-votes`];
 
                     // Check for votes that occurred during processing.
@@ -82,7 +82,7 @@ module.exports.castVote = async (req, res, next) => {
                     let fields = {}
                     fields[`${slot}-votes`] = finalVotes;
 
-                    const wfPatchResponse = await MatchupsCollection.patchLiveItem(wfMatchUp._id, {
+                    const wfPatchResponse = await MatchUpsCollection.patchLiveItem(wfMatchUp._id, {
                         fields: fields
                     });
 
