@@ -54,52 +54,64 @@ module.exports.castVote = async (req, res, next) => {
 
             const voteEntity = new VoteEntity(matchUpID, roundID, storyID, timestamp, userID);
 
-            let wfMatchUp = await MatchupsCollection.item(matchUpID);
-            let votesCheckOne = wfMatchUp[`${slot}-votes`]
-            voteEntity.data.votesFor = votesCheckOne
+            if (!await voteEntity.exists()) {
+                let wfMatchUp = await MatchupsCollection.item(matchUpID);
+                let votesCheckOne = wfMatchUp[`${slot}-votes`]
+                voteEntity.data.votesFor = votesCheckOne
 
-            const dsCommitResults = await asyncRetry(2, voteEntity.commit);
+                const dsCommitResults = await asyncRetry(2, voteEntity.commit);
 
-            if (!dsCommitResults.conflict && dsCommitResults.response) {
-                const dsVoteCount = await calculateMatchUpVotes(matchUpID, roundID, storyID);
+                if (!dsCommitResults.conflict && dsCommitResults.response) {
+                    const dsVoteCount = await calculateMatchUpVotes(matchUpID, roundID, storyID);
 
-                wfMatchUp = await MatchupsCollection.item(voteEntity.data.matchUpID);
-                const votesCheckTwo = wfMatchUp[`${slot}-votes`];
+                    wfMatchUp = await MatchupsCollection.item(voteEntity.data.matchUpID);
+                    const votesCheckTwo = wfMatchUp[`${slot}-votes`];
 
-                // Check for votes that occurred during processing.
-                let wfVotes = votesCheckTwo > votesCheckOne ? votesCheckTwo : votesCheckOne;
+                    // Check for votes that occurred during processing.
+                    let wfVotes = votesCheckTwo > votesCheckOne ? votesCheckTwo : votesCheckOne;
 
-                // Go with the greater between the last Datastore record vote total and WebFlow.
-                let finalVotes = wfVotes >= dsVoteCount ? wfVotes : dsVoteCount;
-                ++finalVotes
+                    // Go with the greater between the last Datastore record vote total and WebFlow.
+                    let finalVotes = wfVotes >= dsVoteCount ? wfVotes : dsVoteCount;
+                    ++finalVotes
 
-                let fields = {}
-                fields[`${slot}-votes`] = finalVotes;
+                    let fields = {}
+                    fields[`${slot}-votes`] = finalVotes;
 
-                const wfPatchResponse = await MatchupsCollection.patchLiveItem(wfMatchUp._id, {
-                    fields: fields
-                });
+                    const wfPatchResponse = await MatchupsCollection.patchLiveItem(wfMatchUp._id, {
+                        fields: fields
+                    });
 
-                logger.debug(JSON.stringify(wfPatchResponse));
-                return res.send({
-                    data: {
-                        success: true,
-                        message: "vote successful",
-                        roundID,
-                        matchUpID,
-                        storyID,
-                        voteCount: fields[`${slot}-votes`]
-                    }
-                });
+                    logger.debug(JSON.stringify(wfPatchResponse));
+                    return res.send({
+                        data: {
+                            success: true,
+                            message: "Vote successful",
+                            roundID,
+                            matchUpID,
+                            storyID,
+                            voteCount: fields[`${slot}-votes`]
+                        }
+                    });
+                } else {
+                    return res.send({
+                        data: {
+                            success: false,
+                            message: "Vote conflict detected",
+                            roundID,
+                            matchUpID,
+                            storyID,
+                            voteCount: votesCheckOne
+                        }
+                    });
+                }
             } else {
                 return res.send({
                     data: {
                         success: false,
-                        message: "vote conflict detected",
+                        message: "You've already voted for this story today.",
                         roundID,
                         matchUpID,
                         storyID,
-                        voteCount: votesCheckOne
                     }
                 });
             }
@@ -107,7 +119,9 @@ module.exports.castVote = async (req, res, next) => {
             return res.send({
                 data: {
                     success: false,
-                    message: "Story is not in an active round."
+                    message: "Story is not in an active round.",
+                    roundID,
+                    storyID,
                 }
             });
         }
