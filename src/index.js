@@ -68,6 +68,7 @@ server.use(queryParser());
 server.use(bodyParser());
 server.use(originCheck());
 
+server.get("/match-up/:id", Vote.voteCount);
 server.get(("/vote/:id"), Vote.voteCheck);
 server.post("/vote/:id", Vote.castVote);
 
