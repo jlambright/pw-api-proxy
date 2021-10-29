@@ -32,4 +32,4 @@ class Cache extends NodeCache {
     }
 }
 
-module.exports = new Cache({stdTTL: 86400}); // TTL of 1 day.
+module.exports = new Cache({stdTTL: 14400}); // TTL of 4 hours.
