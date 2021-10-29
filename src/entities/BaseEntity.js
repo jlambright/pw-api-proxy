@@ -20,18 +20,23 @@ module.exports.BaseEntity = class extends AbstractClass {
      *
      * @param {string} kind
      * @param {object} data
-     * @param {object} options
-     * @param {entity.Key} options.ancestor
-     * @param {entity.Key} options.key
+     * @param {object=} options
+     * @param {string[]} [options.ancestor = null] - String representation of the parent/ancestor key of the entity.
+     * @param {string[]} [options.key = null] - String representation of the entity's key, not including ancestor.
      */
-    constructor(kind, data, options = {ancestor: null, key: null}) {
+    constructor(kind, data, options) {
         const {ancestor, key} = options;
 
         super(BaseEntity, ["exists"]); //Ensures that all super classes employ a .exists() method.
-        this.ancestor = ancestor ? ancestor : null;
+        this.ancestorPath = ancestor || null;
         this.data = data;
         this.kind = kind;
-        this.key = key ? key : datastore.key([this.kind, uniqid()]);
+        this.keyPath = key ? key : [this.kind, uniqid()];
+
+        if (this.ancestor) {
+            this.ancestor = datastore.key(this.ancestorPath);
+            this.key = datastore.key(this.ancestorPath.concat(this.keyPath));
+        }
     }
 
     /**
@@ -50,7 +55,7 @@ module.exports.BaseEntity = class extends AbstractClass {
 
     /**
      *
-     * @return {Promise<object>}
+     * @return {Promise<entity>}
      */
     get = async () => {
         try {

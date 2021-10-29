@@ -32,7 +32,7 @@ module.exports.UserEntity = class extends BaseEntity {
             lastSignInTime,
             lastRefreshTime,
         };
-        const key = datastore.key(["User", uid]);
+        const key = ["User", uid];
         super("User", data, {ancestor: null, key: key});
     }
 
@@ -45,7 +45,7 @@ module.exports.UserEntity = class extends BaseEntity {
             const query = datastore
                 .createQuery(this.kind)
                 .filter("uid", "=", this.data.uid)
-                .filter("email", "=", this.data.email)
+                .filter("email", "=", this.data.email).select("__key__");
 
             const [votes] = await datastore.runQuery(query);
             return (votes.length > 0);

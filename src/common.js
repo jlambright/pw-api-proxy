@@ -1,27 +1,27 @@
+const retry = require('async-await-retry');
+
 const logger = require("./logger");
-const {delay} = require("lodash");
 
 /**
  *
  * @param {int} maxRetries
  * @param fn
- * @param {int} attempts
  * @return {Promise<*|*|*|undefined>}
  */
-const asyncRetry = async (maxRetries, fn, attempts = 0) => {
+const asyncRetry = async (maxRetries, fn) => {
 
-    while (maxRetries >= 0) {
-        try {
-            if (attempts > 0) await delay(5 * attempts);
-            return await fn();
-        } catch (err) {
-            ++attempts;
-            if (maxRetries < attempts) {
-                logger.error(err);
+    try {
+        await retry(fn, {
+            retriesMax: maxRetries,
+            interval: 1000,
+            jitter: 250,
+            onAttemptFail: (data) => {
+                logger.error("[Retry failure]", data)
             }
-        }
+        });
+    } catch (error) {
+        logger.error(`[Retry Failed After ${maxRetries} Attempts]`, error);
     }
-    logger.error(`[Retry Failed After ${maxRetries} Attempts]`);
 }
 module.exports.asyncRetry = asyncRetry;
 

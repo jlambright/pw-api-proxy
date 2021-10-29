@@ -10,7 +10,7 @@ const corsMiddleware = require('restify-cors-middleware2')
 
 const cache = require("./cache");
 const {firebaseAuth} = require("./pwFirebase");
-const {Vote} = require("./routes");
+const {Vote, Logs} = require("./routes");
 
 const origins = [
     'https://app.purplewallstories.com',
@@ -44,7 +44,7 @@ const throttleConfig = {
 };
 
 const originCheck = (req, res, next) => {
-    const ref = req.headers.referer;
+    const ref = req.get('Referrer') || req.headers.referrer || req.headers.referer
     if (ref) {
         const urlRef = new URL(ref);
         if (origins.includes(urlRef.origin)) {
@@ -56,21 +56,22 @@ const originCheck = (req, res, next) => {
 
 const server = restify.createServer({
     name: 'pw-api-proxy',
-    version: '1.0.0'
+    version: '1.5.0'
 });
 
 server.pre(cors.preflight);
+server.pre(restify.pre.dedupeSlashes())
 server.use(cors.actual);
 server.use(throttle(throttleConfig));
-server.use(firebaseAuth);
 server.use(acceptParser(server.acceptable));
 server.use(queryParser());
 server.use(bodyParser());
 server.use(originCheck());
 
-server.get("/match-up/:id", Vote.voteCount);
-server.get(("/vote/:id"), Vote.voteCheck);
-server.post("/vote/:id", Vote.castVote);
+server.post("/logs", acceptParser(["application/json"]), Logs.createLog);
+server.get("/match-up/:id", firebaseAuth, Vote.voteCount);
+server.get("/vote/:id", firebaseAuth, Vote.voteCheck);
+server.post("/vote/:id", firebaseAuth, Vote.castVote);
 
 const port = process.env.PORT || 3030
 server.listen(port, function () {
