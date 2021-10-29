@@ -66,6 +66,8 @@ module.exports.voteCount = async (req, res, next) => {
 
 module.exports.castVote = async (req, res, next) => {
     try {
+        const {time} = req;
+        const timestamp = DateTime.fromMillis(time).setZone("America/New_York");
         const storyID = req.params.id;
         const roundMap = await RoundMap.build();
         const {stories, roundID} = roundMap;
@@ -73,7 +75,6 @@ module.exports.castVote = async (req, res, next) => {
 
         if (storyID in stories) {
             const {matchUpID, slot} = stories[storyID];
-            const timestamp = DateTime.now().setZone("America/New_York");
 
             const voteEntity = new VoteEntity(matchUpID, roundID, storyID, timestamp, userID);
 

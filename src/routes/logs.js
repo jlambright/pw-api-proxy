@@ -10,7 +10,8 @@ const {asyncRetry} = require("../common");
 
 module.exports.createLog = async (req, res, next) => {
     try {
-        const timestamp = DateTime.now().setZone("America/New_York");
+        const {time} = req;
+        const timestamp = DateTime.fromMillis(time).setZone("America/New_York");
         const ref = req.get('Referrer') || req.headers.referrer || req.headers.referer
         const url = new URL(ref);
         const {origin, path, hostname} = url;
