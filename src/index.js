@@ -5,12 +5,15 @@ require('@google-cloud/debug-agent').start({serviceContext: {enableCanary: false
 
 const {URL} = require("url");
 const restify = require("restify");
-const {bodyParser, acceptParser, queryParser, throttle} = restify.plugins;
+const errors = require("restify-errors");
+const {bodyParser, acceptParser, queryParser} = restify.plugins;
+const {throttle} = require("micron-throttle");
 const corsMiddleware = require('restify-cors-middleware2')
 
 const cache = require("./cache");
 const {firebaseAuth} = require("./pwFirebase");
 const {MatchUps, Stories, Logs} = require("./routes");
+const logger = require("./logger");
 
 const origins = [
     'https://app.purplewallstories.com',
@@ -54,6 +57,16 @@ const originCheck = (req, res, next) => {
     return res.send(403, 'Invalid origin');
 }
 
+const catchAll = (req, res, next) => {
+    const route = req.getRoute();
+    const {path, method} = route;
+    logger.warning('[Invalid API Request Attempt', route)
+    return res.send(404, {
+        code: "ResourceNotFound",
+        message: `The resource of ${method}-${path} was not found.`
+    })
+}
+
 const server = restify.createServer({
     name: 'pw-api-proxy',
     version: '1.5.0'
@@ -74,6 +87,11 @@ server.post(`/${process.env.API_VERSION}/logs`, acceptParser(["application/json"
 server.get(`/${process.env.API_VERSION}/match-ups/:matchUpID/votes`, firebaseAuth, MatchUps.voteCount);
 server.get(`/${process.env.API_VERSION}/stories/:storyID/votes`, firebaseAuth, Stories.voteCheck);
 server.post(`/${process.env.API_VERSION}/stories/:storyID/votes`, firebaseAuth, Stories.castVote);
+server.get('*', catchAll);
+server.patch('*', catchAll);
+server.post('*', catchAll);
+server.put('*', catchAll);
+server.del('*', catchAll);
 
 const port = process.env.PORT || 3030
 server.listen(port, function () {
