@@ -59,7 +59,7 @@ const originCheck = (req, res, next) => {
 const catchAll = (req, res, next) => {
     const route = req.getRoute();
     const {path, method} = route;
-    logger.warning('[Invalid API Request Attempt', route)
+    logger.warn('[Invalid API Request Attempt', route)
     return res.send(404, {
         code: "ResourceNotFound",
         message: `The resource of ${method}-${path} was not found.`
