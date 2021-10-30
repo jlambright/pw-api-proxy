@@ -1,23 +1,27 @@
+const retry = require('async-await-retry');
+
 const logger = require("./logger");
 
 /**
  *
- * @param maxRetries
+ * @param {int} maxRetries
  * @param fn
  * @return {Promise<*|*|*|undefined>}
  */
 const asyncRetry = async (maxRetries, fn) => {
 
-    for (let i = 0; i < maxRetries; i++) {
-        try {
-            return await fn();
-        } catch (err) {
-            if (i === maxRetries) {
-                logger.error(err);
+    try {
+        await retry(fn, {
+            retriesMax: maxRetries,
+            interval: 1000,
+            jitter: 250,
+            onAttemptFail: (data) => {
+                logger.error("[Retry failure]", data)
             }
-        }
+        });
+    } catch (error) {
+        logger.error(`[Retry Failed After ${maxRetries} Attempts]`, error);
     }
-    logger.error(`[Retry Failed After ${maxRetries} Attempts]`);
 }
 module.exports.asyncRetry = asyncRetry;
 

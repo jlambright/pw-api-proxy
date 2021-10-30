@@ -3,8 +3,7 @@ const {Datastore} = require("@google-cloud/datastore");
 const datastore = new Datastore();
 const transaction = datastore.transaction();
 
-const NodeCache = require("node-cache");
-const cache = new NodeCache({stdTTL: 86400}); // TTL of 1 day.
+const cache = require("./cache");
 
 const logger = require("./logger");
 const {asyncRetry} = require("./common");

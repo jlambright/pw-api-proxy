@@ -8,4 +8,5 @@ env_variables:
   WF_ROUNDS_ID: $WF_ROUNDS_ID
   WF_SITE_ID: $WF_SITE_ID
   WF_STORIES_ID: $WF_STORIES_ID
+  API_VERSION: 1
 # [END app_yaml]
