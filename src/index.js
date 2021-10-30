@@ -10,7 +10,7 @@ const corsMiddleware = require('restify-cors-middleware2')
 
 const cache = require("./cache");
 const {firebaseAuth} = require("./pwFirebase");
-const {Vote, Logs} = require("./routes");
+const {MatchUps, Stories, Logs} = require("./routes");
 
 const origins = [
     'https://app.purplewallstories.com',
@@ -59,6 +59,8 @@ const server = restify.createServer({
     version: '1.5.0'
 });
 
+server.acceptable = ["application/json"]
+
 server.pre(cors.preflight);
 server.pre(restify.pre.dedupeSlashes())
 server.use(cors.actual);
@@ -68,10 +70,10 @@ server.use(queryParser());
 server.use(bodyParser());
 server.use(originCheck());
 
-server.post("/logs", acceptParser(["application/json"]), Logs.createLog);
-server.get("/match-up/:id", firebaseAuth, Vote.voteCount);
-server.get("/vote/:id", firebaseAuth, Vote.voteCheck);
-server.post("/vote/:id", firebaseAuth, Vote.castVote);
+server.post(`/${process.env.API_VERSION}/logs`, acceptParser(["application/json"]), Logs.createLog);
+server.get(`/${process.env.API_VERSION}/match-ups/:matchUpID/votes`, firebaseAuth, MatchUps.voteCount);
+server.get(`/${process.env.API_VERSION}/stories/:storyID/votes`, firebaseAuth, Stories.voteCheck);
+server.post(`/${process.env.API_VERSION}/stories/:storyID/votes`, firebaseAuth, Stories.castVote);
 
 const port = process.env.PORT || 3030
 server.listen(port, function () {

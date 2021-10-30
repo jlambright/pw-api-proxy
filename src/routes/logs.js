@@ -9,6 +9,7 @@ const {LogEntity} = require("../entities/logEntity");
 const {asyncRetry} = require("../common");
 
 module.exports.createLog = async (req, res, next) => {
+    res.contentType = "json";
     try {
         const {time} = req;
         const timestamp = DateTime.fromMillis(time).setZone("America/New_York");
@@ -38,9 +39,22 @@ module.exports.createLog = async (req, res, next) => {
 
             if (!await logEntity.exists()) {
                 await asyncRetry(2, logEntity.commit());
+                res.send(200, {
+                    data: {
+                        success: true,
+                        message: "Log entity created."
+                    }
+                })
+            } else {
+                return res.send(409, {
+                    data: {
+                        success: false,
+                        message: "Log conflict detected",
+                    }
+                });
             }
         } else {
-            return res.send({
+            return res.send(400, {
                 data: {
                     success: false,
                     message: "Request must contain a request body.",
@@ -50,5 +64,6 @@ module.exports.createLog = async (req, res, next) => {
 
     } catch (reason) {
         if (reason !== null) logger.error(reason);
+        res.send(500, {reason})
     }
 }

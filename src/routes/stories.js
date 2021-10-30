@@ -7,10 +7,11 @@ const logger = require("../logger");
 const {MatchupsCollection} = require("../webflowclient");
 const RoundMap = require("../roundmap");
 
-const {VoteEntity, calculateVotesByMatchUpID, calculateVotesByStoryID} = require("../entities/voteEntity");
+const {VoteEntity, calculateVotesByStoryID} = require("../entities/voteEntity");
 const {asyncRetry} = require("../common");
 
 module.exports.voteCheck = async (req, res, next) => {
+    res.contentType = "json";
     try {
         let hasVoted, inRound;
         const roundMap = await RoundMap.build();
@@ -29,7 +30,7 @@ module.exports.voteCheck = async (req, res, next) => {
             inRound = false;
         }
 
-        return res.send({
+        return res.send(200, {
             data: {
                 hasVoted,
                 inRound,
@@ -41,40 +42,20 @@ module.exports.voteCheck = async (req, res, next) => {
     }
 }
 
-/**
- *
- * @param req
- * @param res
- * @param next
- * @return {Promise<*>}
- */
-module.exports.voteCount = async (req, res, next) => {
-    try {
-        const roundMap = await RoundMap.build();
-        const matchUpID = req.params.id;
 
-        const data = await calculateVotesByMatchUpID(matchUpID, roundMap.id);
-
-        return res.send({
-            data
-        })
-
-    } catch (reason) {
-        if (reason !== null) logger.error(reason);
-    }
-}
 
 module.exports.castVote = async (req, res, next) => {
+    res.contentType = "json";
     try {
         const {time} = req;
         const timestamp = DateTime.fromMillis(time).setZone("America/New_York");
-        const storyID = req.params.id;
+        const {matchUpID, storyID} = req.params;
         const roundMap = await RoundMap.build();
         const {stories, roundID} = roundMap;
         const userID = await getUidFromAuthHeader(req.header('Authorization'));
 
         if (storyID in stories) {
-            const {matchUpID, slot} = stories[storyID];
+            const {slot} = stories[storyID];
 
             const voteEntity = new VoteEntity(matchUpID, roundID, storyID, timestamp, userID);
 
@@ -106,7 +87,7 @@ module.exports.castVote = async (req, res, next) => {
                     });
 
                     logger.debug(JSON.stringify(wfPatchResponse));
-                    return res.send({
+                    return res.send(200, {
                         data: {
                             success: true,
                             message: "Vote successful",
@@ -117,7 +98,7 @@ module.exports.castVote = async (req, res, next) => {
                         }
                     });
                 } else {
-                    return res.send({
+                    return res.send(409, {
                         data: {
                             success: false,
                             message: "Vote conflict detected",
@@ -129,7 +110,7 @@ module.exports.castVote = async (req, res, next) => {
                     });
                 }
             } else {
-                return res.send({
+                return res.send(400, {
                     data: {
                         success: false,
                         message: "You've already voted for this story today.",
@@ -140,7 +121,7 @@ module.exports.castVote = async (req, res, next) => {
                 });
             }
         } else {
-            return res.send({
+            return res.send(400, {
                 data: {
                     success: false,
                     message: "Story is not in an active round.",
@@ -151,5 +132,6 @@ module.exports.castVote = async (req, res, next) => {
         }
     } catch (reason) {
         if (reason !== null) logger.error(reason);
+        res.send(500, {reason})
     }
 }

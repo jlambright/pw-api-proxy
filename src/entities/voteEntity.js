@@ -83,7 +83,7 @@ module.exports.calculateVotesByStoryID = async (matchUpID, roundID, storyID) => 
  *
  * @param {string} matchUpID
  * @param {string} roundID
- * @return {Promise<{aVoteCount: number, bVoteCount: number}>}
+ * @return {Promise<{a: number, b: number}>}
  */
 module.exports.calculateVotesByMatchUpID = async (matchUpID, roundID) => {
 
@@ -97,8 +97,8 @@ module.exports.calculateVotesByMatchUpID = async (matchUpID, roundID) => {
         const bVoteCount = await calculateVotesByStoryID(matchUpID, roundID, bStoryID);
 
         return {
-            aVoteCount,
-            bVoteCount
+            "a": aVoteCount,
+            "b": bVoteCount
         }
 
     } catch (e) {
