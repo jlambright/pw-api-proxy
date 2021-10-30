@@ -75,7 +75,7 @@ server.acceptable = ["application/json"]
 
 server.pre(cors.preflight);
 server.pre(restify.pre.dedupeSlashes())
-server.pre(originCheck());
+server.pre(originCheck);
 server.use(cors.actual);
 server.use(throttle(throttleConfig));
 server.use(acceptParser(server.acceptable));
