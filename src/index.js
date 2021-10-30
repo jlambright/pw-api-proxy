@@ -46,7 +46,7 @@ const throttleConfig = {
 };
 
 const originCheck = (req, res, next) => {
-    const ref = req.get('Referrer') || req.headers.referrer || req.headers.referer
+    const ref = req.headers.referrer || req.headers.referer
     if (ref) {
         const urlRef = new URL(ref);
         if (origins.includes(urlRef.origin)) {
