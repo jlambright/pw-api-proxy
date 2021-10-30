@@ -9,7 +9,6 @@ const logger = require("../logger");
 const {entity} = require("@google-cloud/datastore/build/src/entity");
 const {BaseEntity} = require("./BaseEntity");
 const RoundMap = require("../roundmap");
-const {calculateVotesByStoryID} = require("./voteEntity");
 
 module.exports.VoteEntity = class extends BaseEntity {
 
@@ -62,7 +61,7 @@ module.exports.VoteEntity = class extends BaseEntity {
  * @param {string} storyID
  * @return {Promise<number>}
  */
-module.exports.calculateVotesByStoryID = async (matchUpID, roundID, storyID) => {
+const calculateVotesByStoryID = async (matchUpID, roundID, storyID) => {
     try {
         const query = datastore
             .createQuery('Vote')
@@ -78,6 +77,8 @@ module.exports.calculateVotesByStoryID = async (matchUpID, roundID, storyID) => 
         logger.error(e);
     }
 }
+
+module.exports.calculateVotesByMatchUpID = calculateVotesByStoryID;
 
 /**
  *
