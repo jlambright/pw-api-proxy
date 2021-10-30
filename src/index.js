@@ -53,7 +53,7 @@ const originCheck = (req, res, next) => {
             return next();
         }
     }
-    return res.send(403, 'Invalid origin');
+    return res.send(403, {code: "Forbidden", message: 'Invalid origin'});
 }
 
 const catchAll = (req, res, next) => {
@@ -75,12 +75,12 @@ server.acceptable = ["application/json"]
 
 server.pre(cors.preflight);
 server.pre(restify.pre.dedupeSlashes())
+server.pre(originCheck());
 server.use(cors.actual);
 server.use(throttle(throttleConfig));
 server.use(acceptParser(server.acceptable));
 server.use(queryParser());
 server.use(bodyParser());
-server.use(originCheck());
 
 server.post(`/${process.env.API_VERSION}/logs`, acceptParser(["application/json"]), Logs.createLog);
 server.get(`/${process.env.API_VERSION}/match-ups/:matchUpID/votes`, firebaseAuth, MatchUps.voteCount);
