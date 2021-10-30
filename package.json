@@ -46,6 +46,7 @@
     "firebase-admin": "^9.6.0",
     "lodash": "^4.17.21",
     "luxon": "^1.28.0",
+    "micron-throttle": "^0.1.0",
     "node-cache": "^5.1.2",
     "nsql-cache": "^1.1.5",
     "nsql-cache-datastore": "^1.1.6",
