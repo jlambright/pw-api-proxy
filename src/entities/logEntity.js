@@ -1,6 +1,5 @@
 const {Datastore} = require("@google-cloud/datastore");
 const datastore = new Datastore();
-const {Operator} = datastore.v1.PropertyFilter;
 const Enum = require("enum");
 const uniqid = require("uniqid");
 
@@ -130,7 +129,7 @@ module.exports.LogEntity = class extends BaseEntity {
 
     /**
      *
-     * @param {[string, Operator, *][]} filters
+     * @param {[string, *, *][]} filters - Second item must be =|>|<|>=|<=.
      * @param {boolean} keysOnly
      * @return {Promise<[Entity[], RunQueryInfo]>}
      */
