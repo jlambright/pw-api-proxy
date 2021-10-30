@@ -5,9 +5,8 @@ require('@google-cloud/debug-agent').start({serviceContext: {enableCanary: false
 
 const {URL} = require("url");
 const restify = require("restify");
-const errors = require("restify-errors");
 const {bodyParser, acceptParser, queryParser} = restify.plugins;
-const {throttle} = require("micron-throttle");
+const throttle = require("micron-throttle");
 const corsMiddleware = require('restify-cors-middleware2')
 
 const cache = require("./cache");
