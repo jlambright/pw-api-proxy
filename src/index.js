@@ -40,7 +40,7 @@ const throttleConfig = {
     burst: 15,  // Max 15 concurrent requests (if tokens)
     rate: 0.75,  // Steady state
     ip: false,   // throttle per IP
-    username: true, // throttle per username
+    username: false, // throttle per username
     xff: true, // throttle per forwarded IP
     tokensTable: cache
 };
