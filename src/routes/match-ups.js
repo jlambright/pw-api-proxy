@@ -17,20 +17,21 @@ module.exports.voteCount = async (req, res, next) => {
     res.contentType = "json";
     try {
         const matchUpID = req.params.id;
-        const matchUpObj = MatchupsCollection.item(matchUpID);
         const roundMap = await RoundMap.build();
-        const {slot} = roundMap.stories[matchUpID];
 
-        const data = await calculateVotesByMatchUpID(matchUpID, roundMap.id);
-        let fields = {};
-        fields[`${slot}-votes`] = data[slot];
+        const {aVoteCount, bVoteCount} = await calculateVotesByMatchUpID(matchUpID, roundMap.id);
+        let fields = {
+            "a-slot": aVoteCount,
+            "b-slot": bVoteCount
+        };
 
 
         await MatchupsCollection.patchLiveItem(matchUpID, {
             fields: fields
         });
         return res.send(200, {
-            data
+            aVoteCount,
+            bVoteCount
         })
 
     } catch (reason) {
