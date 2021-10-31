@@ -7,37 +7,30 @@ const {URL} = require("url");
 const restify = require("restify");
 const {bodyParser, acceptParser, queryParser} = restify.plugins;
 const throttle = require("micron-throttle");
-const corsMiddleware = require('restify-cors-middleware2')
+const cors = require('cors');
+const corsGate = require('cors-gate');
 
 const cache = require("./cache");
 const {firebaseAuth} = require("./pwFirebase");
 const {MatchUps, Stories, Logs} = require("./routes");
 
 const origins = [
-    'https://*.purplewallstories.com',
+    'https://app.purplewallstories.com',
+    'https://www.purplewallstories.com',
+    'https://purplewallstories.com',
     'https://purple-wall.webflow.io',
 ]
 
-const cors = corsMiddleware({
-    preflightMaxAge: 5, //Optional,
+const corsConf = cors({
     credentials: true,
-    origins: origins,
-    allowHeaders: [
-        "Access-Control-Allow-Origin",
-        "API-Token",
-        "Authorization",
-        "Content-Type",
-        "Credentials",
-        "Mode",
-    ],
-    exposeHeaders: [
-        "Access-Control-Allow-Headers",
-        "Access-Control-Allow-Origin",
-        "API-Token-Expiry",
-        "Authorization",
-        "Credentials",
-    ]
+    origin: origins
 });
+
+const corsGateConf = corsGate({
+    strict: true,
+    allowSafe: true,
+    origin: origins
+})
 
 const throttleConfig = {
     burst: 15,  // Max 15 concurrent requests (if tokens)
@@ -66,10 +59,11 @@ const server = restify.createServer({
 
 server.acceptable = ["application/json"]
 
-server.pre(cors.preflight);
 server.pre(restify.pre.dedupeSlashes())
-server.pre(originCheck);
-server.use(cors.actual);
+server.use(corsGate.originFallbackToReferer());
+server.use(corsConf);
+server.use(corsGateConf);
+server.use(originCheck);
 server.use(throttle(throttleConfig));
 server.use(acceptParser(server.acceptable));
 server.use(queryParser());
