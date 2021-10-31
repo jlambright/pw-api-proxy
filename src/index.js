@@ -23,6 +23,7 @@ const cors = corsMiddleware({
         'https://www.purplewallstories.com',
         'https://purplewallstories.com',
         'https://purple-wall.webflow.io',
+        '*'
     ],
     allowHeaders: [
         "Accept",
