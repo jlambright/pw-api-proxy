@@ -19,18 +19,24 @@ const origins = [
 ]
 
 const cors = corsMiddleware({
-    preflightMaxAge: 50, //Optional,
+    preflightMaxAge: 5, //Optional,
     credentials: true,
     origins: origins,
     allowHeaders: [
         "Access-Control-Allow-Origin",
-        'API-Token',
+        "API-Token",
         "Authorization",
         "Content-Type",
         "Credentials",
-        "Mode"
+        "Mode",
     ],
-    exposeHeaders: ['API-Token-Expiry', "Access-Control-Allow-Origin", "Authorization"]
+    exposeHeaders: [
+        "Access-Control-Allow-Headers",
+        "Access-Control-Allow-Origin",
+        "API-Token-Expiry",
+        "Authorization",
+        "Credentials",
+    ]
 });
 
 const throttleConfig = {
