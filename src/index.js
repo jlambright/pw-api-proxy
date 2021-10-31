@@ -7,7 +7,7 @@ const {URL} = require("url");
 const restify = require("restify");
 const {bodyParser, acceptParser, queryParser} = restify.plugins;
 const throttle = require("micron-throttle");
-const cors = require('cors');
+const corsMiddleware = require('restify-cors-middleware2');
 const corsGate = require('cors-gate');
 
 const cache = require("./cache");
@@ -21,9 +21,25 @@ const origins = [
     'https://purple-wall.webflow.io',
 ]
 
-const corsConf = cors({
+const cors = corsMiddleware({
+    preflightMaxAge: 50, //Optional,
     credentials: true,
-    origin: origins
+    origins,
+    allowHeaders: [
+        "Access-Control-Allow-Headers",
+        "Access-Control-Allow-Origin",
+        'API-Token',
+        "Authorization",
+        "Content-Type",
+        "Credentials",
+        "Mode"
+    ],
+    exposeHeaders: [
+        "API-Token-Expiry",
+        "Access-Control-Allow-Headers",
+        "Access-Control-Allow-Origin",
+        "Authorization"
+    ]
 });
 
 const corsGateConf = corsGate({
@@ -41,17 +57,6 @@ const throttleConfig = {
     tokensTable: cache
 };
 
-const originCheck = (req, res, next) => {
-    const ref = req.headers.referrer || req.headers.referer
-    if (ref) {
-        const urlRef = new URL(ref);
-        if (origins.includes(urlRef.origin)) {
-            return next();
-        }
-    }
-    return res.send(403, {code: "Forbidden", message: 'Invalid origin'});
-}
-
 const server = restify.createServer({
     name: 'pw-api-proxy',
     version: '1.5.0'
@@ -59,11 +64,11 @@ const server = restify.createServer({
 
 server.acceptable = ["application/json"]
 
+server.pre(cors.preflight);
 server.pre(restify.pre.dedupeSlashes())
 server.use(corsGate.originFallbackToReferer());
-server.use(corsConf);
+server.use(cors.actual);
 server.use(corsGateConf);
-server.use(originCheck);
 server.use(throttle(throttleConfig));
 server.use(acceptParser(server.acceptable));
 server.use(queryParser());

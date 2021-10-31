@@ -53,6 +53,7 @@
     "nsql-cache": "^1.1.5",
     "nsql-cache-datastore": "^1.1.6",
     "restify": "^8.5.1",
+    "restify-cors-middleware2": "^2.1.2",
     "restify-errors": "^8.0.2",
     "restify-firebase-auth": "^1.0.4",
     "uniqid": "^5.4.0",
