@@ -12,20 +12,17 @@ const corsMiddleware = require('restify-cors-middleware2')
 const cache = require("./cache");
 const {firebaseAuth} = require("./pwFirebase");
 const {MatchUps, Stories, Logs} = require("./routes");
-const logger = require("./logger");
 
 const origins = [
-    'https://app.purplewallstories.com',
-    'https://purple-wall.appspot.com',
+    'https://*.purplewallstories.com',
     'https://purple-wall.webflow.io',
 ]
 
 const cors = corsMiddleware({
     preflightMaxAge: 50, //Optional,
     credentials: true,
-    origins,
+    origins: origins,
     allowHeaders: [
-        "Access-Control-Allow-Headers",
         "Access-Control-Allow-Origin",
         'API-Token',
         "Authorization",
@@ -33,7 +30,7 @@ const cors = corsMiddleware({
         "Credentials",
         "Mode"
     ],
-    exposeHeaders: ['API-Token-Expiry', "Access-Control-Allow-Headers", "Access-Control-Allow-Origin", "Authorization"]
+    exposeHeaders: ['API-Token-Expiry', "Access-Control-Allow-Origin", "Authorization"]
 });
 
 const throttleConfig = {
@@ -56,22 +53,10 @@ const originCheck = (req, res, next) => {
     return res.send(403, {code: "Forbidden", message: 'Invalid origin'});
 }
 
-const catchAll = (req, res, next) => {
-    const route = req.getRoute();
-    const {path, method} = route;
-    logger.warn('[Invalid API Request Attempt', route)
-    return res.send(404, {
-        code: "ResourceNotFound",
-        message: `The resource of ${method}-${path} was not found.`
-    })
-}
-
 const server = restify.createServer({
     name: 'pw-api-proxy',
     version: '1.5.0'
 });
-
-let v1Router = server.router;
 
 server.acceptable = ["application/json"]
 
