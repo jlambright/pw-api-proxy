@@ -45,7 +45,7 @@ const cors = corsMiddleware({
 const corsGateConf = corsGate({
     strict: true,
     allowSafe: true,
-    origin: origins
+    origin: "https://api.purplewallstories.com"
 })
 
 const throttleConfig = {
