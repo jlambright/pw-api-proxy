@@ -14,17 +14,18 @@ const cache = require("./cache");
 const {firebaseAuth} = require("./pwFirebase");
 const {MatchUps, Stories, Logs} = require("./routes");
 
+const origins = [
+    'https://app.purplewallstories.com',
+    'https://www.purplewallstories.com',
+    'https://purplewallstories.com',
+    'https://purple-wall.webflow.io',
+    '*'
+];
 
 const cors = corsMiddleware({
     preflightMaxAge: 5, //Optional,
     credentials: true,
-    origins: [
-        'https://app.purplewallstories.com',
-        'https://www.purplewallstories.com',
-        'https://purplewallstories.com',
-        'https://purple-wall.webflow.io',
-        '*'
-    ],
+    origins,
     allowHeaders: [
         "Accept",
         "Authorization",
