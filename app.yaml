@@ -9,16 +9,4 @@ env_variables:
   WF_SITE_ID: $WF_SITE_ID
   WF_STORIES_ID: $WF_STORIES_ID
   API_VERSION: "v1"
-handlers:
-  - url: /.*
-    secure: always
-    redirect_http_response_code: 301
-    script: auto
-    http_headers:
-      Access-Control-Allow-Origin:
-        - https://app.purplewallstories.com
-        - https://dev.purplewallstories.com
-        - https://www.purplewallstories.com
-        - https://purplewallstories.com
-        - https://purple-wall.webflow.io
 # [END app_yaml]
