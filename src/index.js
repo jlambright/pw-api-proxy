@@ -33,7 +33,7 @@ const cors = corsMiddleware({
     exposeHeaders: [
         "Access-Control-Allow-Headers",
         "Access-Control-Allow-Origin",
-        "Access-Control-Allow-METHODS",
+        "Access-Control-Allow-Methods",
         "Authorization"
     ]
 });
