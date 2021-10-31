@@ -73,11 +73,6 @@ const server = restify.createServer({
 
 let v1Router = server.router;
 
-v1Router.post(`/logs`, acceptParser(["application/json"]), Logs.createLog);
-v1Router.get(`/match-ups/:matchUpID/votes`, firebaseAuth, MatchUps.voteCount);
-v1Router.get(`/stories/:storyID/votes`, firebaseAuth, Stories.voteCheck);
-v1Router.post(`/stories/:storyID/votes`, firebaseAuth, Stories.castVote);
-
 server.acceptable = ["application/json"]
 
 server.pre(cors.preflight);
@@ -88,8 +83,10 @@ server.use(throttle(throttleConfig));
 server.use(acceptParser(server.acceptable));
 server.use(queryParser());
 server.use(bodyParser());
-server.use(`/v1`, v1Router);
-server.use(catchAll);
+server.post(`/logs`, acceptParser(["application/json"]), Logs.createLog);
+server.get(`/match-ups/:matchUpID/votes`, firebaseAuth, MatchUps.voteCount);
+server.get(`/stories/:storyID/votes`, firebaseAuth, Stories.voteCheck);
+server.post(`/stories/:storyID/votes`, firebaseAuth, Stories.castVote);
 
 
 const port = process.env.PORT || 3030
