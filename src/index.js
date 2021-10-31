@@ -19,7 +19,6 @@ const origins = [
     'https://www.purplewallstories.com',
     'https://purplewallstories.com',
     'https://purple-wall.webflow.io',
-    '*'
 ];
 
 const cors = corsMiddleware({
@@ -30,13 +29,18 @@ const cors = corsMiddleware({
         "Accept",
         "Authorization",
         "Content-Type",
+        "Credentials",
         "Mode"
     ],
     exposeHeaders: [
+        "Accept",
         "Access-Control-Allow-Headers",
         "Access-Control-Allow-Origin",
         "Access-Control-Allow-Methods",
-        "Authorization"
+        "Authorization",
+        "Content-Type",
+        "Credentials",
+        "Mode"
     ]
 });
 
