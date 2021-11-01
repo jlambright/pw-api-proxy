@@ -69,10 +69,10 @@ server.use(throttle(throttleConfig));
 server.use(acceptParser(server.acceptable));
 server.use(queryParser());
 server.use(bodyParser());
-server.post(`/${process.env.API_VERSION}/logs`, acceptParser(["application/json"]), Logs.createLog);
-server.get(`/${process.env.API_VERSION}/match-ups/:matchUpID/votes`, firebaseAuth, MatchUps.voteCount);
-server.get(`/${process.env.API_VERSION}/stories/:storyID/votes`, firebaseAuth, Stories.voteCheck);
-server.post(`/${process.env.API_VERSION}/stories/:storyID/votes`, firebaseAuth, Stories.castVote);
+server.post(`/v1/logs`, Logs.createLog);
+server.get(`/v1/match-ups/:matchUpID/votes`, firebaseAuth, MatchUps.voteCount);
+server.get(`/v1/stories/:storyID/votes`, firebaseAuth, Stories.voteCheck);
+server.post(`/v1/stories/:storyID/votes`, firebaseAuth, Stories.castVote);
 
 
 const port = process.env.PORT || 3030
