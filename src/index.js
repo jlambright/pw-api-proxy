@@ -1,8 +1,5 @@
 'use strict';
 
-require('@google-cloud/debug-agent').start({serviceContext: {enableCanary: true}});
-
-
 const {URL} = require("url");
 const restify = require("restify");
 const {bodyParser, acceptParser, queryParser} = restify.plugins;
