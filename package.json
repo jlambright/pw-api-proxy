@@ -1,24 +1,22 @@
 {
   "name": "pw-api-proxy",
   "description": "An proxy-wrapper for the WebFlow API.",
-  "version": "0.1.0",
+  "version": "1.5.0",
   "homepage": "",
   "private": true,
   "main": "src",
   "keywords": [
-    "feathers"
+    "restify"
   ],
   "author": "Josh Lambright <josh@milestones.media>",
   "contributors": [],
   "bugs": {},
   "directories": {
-    "lib": "src",
-    "test": "test/",
-    "config": "config/"
+    "lib": "src"
   },
   "engines": {
-    "node": "14.X.X",
-    "yarn": ">= 0.18.0"
+    "node": "16.X.X",
+    "yarn": ">= 1.22.5"
   },
   "scripts": {
     "deploy": "gcloud app deploy",
