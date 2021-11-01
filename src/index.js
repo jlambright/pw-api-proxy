@@ -46,12 +46,12 @@ const originCheck = (req, res, next) => {
         if (origins.includes(urlRef.origin)) {
             if (!req.headers.hasOwnProperty("origin") || !req.headers.origin) {
                 req.headers.origin = urlRef.origin;
-                logger.debug("Origin injected into request header.", req.headers);
+                logger.debug("Origin injected into request header.", JSON.parse(req.toString()));
             }
             return next();
         }
     }
-    logger.warning("Request originated from unauthorized origin.", req);
+    logger.warning("Request originated from unauthorized origin.", JSON.parse(req.toString()));
     return res.send(403, {code: "Forbidden", message: 'Invalid origin'});
 }
 
