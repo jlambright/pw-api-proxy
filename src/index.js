@@ -7,7 +7,7 @@ const {URL} = require("url");
 const restify = require("restify");
 const {bodyParser, acceptParser, queryParser} = restify.plugins;
 const throttle = require("micron-throttle");
-const corser = require('corser');
+const corsMiddleware = require('restify-cors-middleware2');
 const corsGate = require('cors-gate');
 
 const cache = require("./cache");
@@ -21,13 +21,16 @@ const origins = [
     'https://purple-wall.webflow.io',
 ];
 
-const cors = corser.create({
-    credentials: true,
-    endPreflightRequests: true,
-    maxAge: 5,
+const cors = corsMiddleware({
+    preflightMaxAge: 5,
     origins,
-    requestHeaders: corser.simpleRequestHeaders.concat(["Authorization", "X-Requested-With"]),
-    responseHeaders: corser.simpleResponseHeaders.concat(["Authorization", "ETag"])
+    allowHeaders: ["Authorization", "X-Requested-With"],
+    exposeHeaders: [
+        "Access-Control-Allow-Header",
+        "Access-Control-Allow-Methods",
+        "Access-Control-Allow-Origin",
+        "Authorization",
+        "ETag"]
 });
 
 const originCheck = (req, res, next) => {
@@ -58,8 +61,9 @@ const server = restify.createServer({
 server.acceptable = ["application/json"]
 
 server.pre(corsGate.originFallbackToReferer());
+server.pre(cors.preflight);
 server.pre(restify.pre.dedupeSlashes())
-server.use(cors);
+server.use(cors.actual);
 server.use(originCheck);
 server.use(throttle(throttleConfig));
 server.use(acceptParser(server.acceptable));
