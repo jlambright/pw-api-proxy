@@ -41,17 +41,34 @@ const cors = corsMiddleware({
 
 const originCheck = (req, res, next) => {
     const ref = req.headers.referrer || req.headers.referer
-    if (ref) {
+
+    const route = req.getRoute();
+    const contentType = req.getContentType();
+    const {accepts, userAgent,} = req;
+    let metadata = {
+        ...route,
+        contentType,
+        accepts,
+        userAgent
+    };
+
+    if (req.headers.hasOwnProperty("origin") && req.headers.origin && origins.includes(req.headers.origin)) {
+        return next();
+    } else if (ref) {
         const urlRef = new URL(ref);
         if (origins.includes(urlRef.origin)) {
-            if (!req.headers.hasOwnProperty("origin") || !req.headers.origin) {
-                req.headers.origin = urlRef.origin;
-                logger.debug("Origin injected into request header.", JSON.parse(req.toString()));
-            }
+            metadata.origin = null;
+            metadata.newOrigin = urlRef.origin;
+            req.headers.origin = urlRef.origin;
+            logger.debug("Origin was not defined in the request, but referer is authorized.", metadata);
             return next();
+        } else {
+            logger.warning("Request origin and referer are unauthorized.", metadata);
         }
+    } else {
+        metadata.origin = req.origin ? req.origin : null;
+        logger.warning("Request origin unauthorized.", metadata);
     }
-    logger.warning("Request originated from unauthorized origin.", JSON.parse(req.toString()));
     return res.send(403, {code: "Forbidden", message: 'Invalid origin'});
 }
 
