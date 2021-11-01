@@ -42,6 +42,7 @@
     "async-await-retry": "^1.2.3",
     "cors": "^2.8.5",
     "cors-gate": "^1.1.3",
+    "corser": "^2.0.1",
     "enum": "^3.0.4",
     "escape-json-node": "^2.0.0",
     "firebase": "^8.3.1",
