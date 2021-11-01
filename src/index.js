@@ -1,14 +1,12 @@
 'use strict';
 
-require('@google-cloud/debug-agent').start({serviceContext: {enableCanary: true}});
-
 const {URL} = require("url");
 const restify = require("restify");
 const {bodyParser, acceptParser, queryParser} = restify.plugins;
-const throttle = require("micron-throttle");
+// const throttle = require("micron-throttle"); //[Might add this back later if rate-limits are needed.]
 const corsMiddleware = require('restify-cors-middleware2');
 
-const cache = require("./cache");
+// const cache = require("./cache"); //[Might add this back later if rate-limits are needed.]
 const {firebaseAuth} = require("./pwFirebase");
 const {MatchUps, Stories, Logs} = require("./routes");
 
@@ -45,6 +43,7 @@ const originCheck = (req, res, next) => {
     return res.send(403, {code: "Forbidden", message: 'Invalid origin'});
 }
 
+/* [Might add this back later if rate-limits are needed.]
 const throttleConfig = {
     burst: 15,  // Max 15 concurrent requests (if tokens)
     rate: 0.75,  // Steady state
@@ -53,6 +52,7 @@ const throttleConfig = {
     xff: true, // throttle per forwarded IP
     tokensTable: cache
 };
+*/
 
 const server = restify.createServer({
     name: 'pw-api-proxy',
@@ -65,7 +65,7 @@ server.pre(originCheck);
 server.pre(cors.preflight);
 server.pre(restify.pre.dedupeSlashes())
 server.use(cors.actual);
-server.use(throttle(throttleConfig));
+// server.use(throttle(throttleConfig));
 server.use(acceptParser(server.acceptable));
 server.use(queryParser());
 server.use(bodyParser());
