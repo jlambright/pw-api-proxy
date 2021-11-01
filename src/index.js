@@ -63,8 +63,8 @@ server.acceptable = ["application/json"]
 server.pre(corsGate.originFallbackToReferer());
 server.pre(cors.preflight);
 server.pre(restify.pre.dedupeSlashes())
+server.pre(originCheck);
 server.use(cors.actual);
-server.use(originCheck);
 server.use(throttle(throttleConfig));
 server.use(acceptParser(server.acceptable));
 server.use(queryParser());
