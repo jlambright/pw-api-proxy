@@ -9,6 +9,7 @@ const corsMiddleware = require('restify-cors-middleware2');
 // const cache = require("./cache"); //[Might add this back later if rate-limits are needed.]
 const {firebaseAuth} = require("./pwFirebase");
 const {MatchUps, Stories, Logs} = require("./routes");
+const logger = require("./logger");
 
 const origins = [
     'https://app.purplewallstories.com',
@@ -20,13 +21,22 @@ const origins = [
 const cors = corsMiddleware({
     preflightMaxAge: 5,
     origins,
-    allowHeaders: ["Authorization", "X-Requested-With"],
+    allowHeaders: [
+        "authorization",
+        "content-type",
+        "mode",
+        "origin",
+        "x-forwarded-for",
+        "x-requested-with"],
     exposeHeaders: [
-        "Access-Control-Allow-Header",
-        "Access-Control-Allow-Methods",
-        "Access-Control-Allow-Origin",
-        "Authorization",
-        "ETag"]
+        "access-control-allow-header",
+        "access-control-allow-methods",
+        "access-control-allow-origin",
+        "allow-origin",
+        "authorization",
+        "content-type",
+        "date",
+        "etag"]
 });
 
 const originCheck = (req, res, next) => {
@@ -36,10 +46,12 @@ const originCheck = (req, res, next) => {
         if (origins.includes(urlRef.origin)) {
             if (!req.headers.hasOwnProperty("origin") || !req.headers.origin) {
                 req.headers.origin = urlRef.origin;
+                logger.debug("Origin injected into request header.", req.headers);
             }
             return next();
         }
     }
+    logger.warning("Request originated from unauthorized origin.", req);
     return res.send(403, {code: "Forbidden", message: 'Invalid origin'});
 }
 
