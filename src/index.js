@@ -1,6 +1,6 @@
 'use strict';
 
-require('@google-cloud/debug-agent').start({serviceContext: {enableCanary: false}});
+require('@google-cloud/debug-agent').start({serviceContext: {enableCanary: true}});
 
 
 const {URL} = require("url");
@@ -8,7 +8,6 @@ const restify = require("restify");
 const {bodyParser, acceptParser, queryParser} = restify.plugins;
 const throttle = require("micron-throttle");
 const corsMiddleware = require('restify-cors-middleware2');
-const corsGate = require('cors-gate');
 
 const cache = require("./cache");
 const {firebaseAuth} = require("./pwFirebase");
@@ -38,6 +37,9 @@ const originCheck = (req, res, next) => {
     if (ref) {
         const urlRef = new URL(ref);
         if (origins.includes(urlRef.origin)) {
+            if (!req.headers.hasOwnProperty("origin") || !req.headers.origin) {
+                req.headers.origin = urlRef.origin;
+            }
             return next();
         }
     }
@@ -60,10 +62,9 @@ const server = restify.createServer({
 
 server.acceptable = ["application/json"]
 
-server.pre(corsGate.originFallbackToReferer());
+server.pre(originCheck);
 server.pre(cors.preflight);
 server.pre(restify.pre.dedupeSlashes())
-server.pre(originCheck);
 server.use(cors.actual);
 server.use(throttle(throttleConfig));
 server.use(acceptParser(server.acceptable));
