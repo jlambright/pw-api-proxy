@@ -25,23 +25,8 @@ const cors = corsMiddleware({
     preflightMaxAge: 5, //Optional,
     credentials: true,
     origins,
-    allowHeaders: [
-        "Accept",
-        "Authorization",
-        "Content-Type",
-        "Credentials",
-        "Mode"
-    ],
-    exposeHeaders: [
-        "Accept",
-        "Access-Control-Allow-Headers",
-        "Access-Control-Allow-Origin",
-        "Access-Control-Allow-Methods",
-        "Authorization",
-        "Content-Type",
-        "Credentials",
-        "Mode"
-    ]
+    allowHeaders: ["Authorization"],
+    exposeHeaders: ["Authorization"]
 });
 
 const originCheck = (req, res, next) => {
