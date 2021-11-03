@@ -7,14 +7,15 @@ const {LoggingWinston} = require("@google-cloud/logging-winston");
 const logger = createLogger({
   // To see more detailed errors, change this to 'debug'
   level: 'info',
+  defaultMeta: {service: "pw-api-proxy"},
   format: format.json(),
   transports: [
     //
     // - Write all logs with level `error` and below to `error.log`
     // - Write all logs with level `info` and below to `combined.log`
     //
-    new transports.File({ filename: 'error.log', level: 'error' }),
-    new transports.File({ filename: 'combined.log' })
+    new transports.File({filename: 'error.log', level: 'error'}),
+    new transports.File({filename: 'combined.log'})
   ],
 });
 
