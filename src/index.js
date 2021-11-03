@@ -41,21 +41,15 @@ const cors = corsMiddleware({
         "etag"]
 });
 
-const setReqUUID = (req, res, next) => {
-    const {method} = req.getRoute();
-    req.id(uniqid(`${method}_`));
-    return next();
-};
-
 
 const originCheck = (req, res, next) => {
     const ref = req.headers.referrer || req.headers.referer
-
     const {path, method, versions, name} = req.getRoute();
+    const id = req.id(uniqid(`${method}_`));
     const contentType = req.getContentType();
     const {accepts, userAgent} = req;
     let metadata = {
-        id: req.id(),
+        id,
         method,
         name,
         versions,
@@ -100,13 +94,11 @@ const server = createServer({
     ignoreTrailingSlash: true,
     log: logger,
     name: 'pw-api-proxy',
-    noWriteContinue: true,
     version: '1.5.0',
 });
 
 server.acceptable = ["application/json"]
 
-server.pre(setReqUUID);
 server.pre(originCheck);
 server.pre(cors.preflight);
 server.pre(dedupeSlashes())
