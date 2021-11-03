@@ -1,8 +1,8 @@
 'use strict';
 
 const {URL} = require("url");
-const restify = require("restify");
-const {bodyParser, acceptParser, queryParser} = restify.plugins;
+const {createServer, plugins, pre: {dedupeSlashes}} = require("restify");
+const {bodyParser, acceptParser, queryParser} = plugins;
 // const throttle = require("micron-throttle"); //[Might add this back later if rate-limits are needed.]
 const corsMiddleware = require('restify-cors-middleware2');
 
@@ -10,6 +10,8 @@ const corsMiddleware = require('restify-cors-middleware2');
 const {firebaseAuth} = require("./pwFirebase");
 const {MatchUps, Stories, Logs} = require("./routes");
 const logger = require("./logger");
+const {toPlainObject} = require("lodash/fp");
+const uniqid = require("uniqid");
 
 const origins = [
     'https://app.purplewallstories.com',
@@ -39,20 +41,48 @@ const cors = corsMiddleware({
         "etag"]
 });
 
+const setReqUUID = (req, res, next) => {
+    const {method} = req.getRoute();
+    req.id(uniqid(`${method}_`));
+    return next();
+};
+
+
 const originCheck = (req, res, next) => {
     const ref = req.headers.referrer || req.headers.referer
-    if (ref) {
+
+    const {path, method, versions, name} = req.getRoute();
+    const contentType = req.getContentType();
+    const {accepts, userAgent} = req;
+    let metadata = {
+        id: req.id(),
+        method,
+        name,
+        versions,
+        path,
+        contentType,
+        accepts,
+        userAgent
+    };
+
+    if (req.headers.hasOwnProperty("origin") && req.headers.origin && origins.includes(req.headers.origin)) {
+        return next();
+    } else if (ref) {
         const urlRef = new URL(ref);
         if (origins.includes(urlRef.origin)) {
-            if (!req.headers.hasOwnProperty("origin") || !req.headers.origin) {
-                req.headers.origin = urlRef.origin;
-                logger.debug("Origin injected into request header.", JSON.parse(req.toString()));
-            }
+            metadata.origin = null;
+            metadata.newOrigin = urlRef.origin;
+            req.headers.origin = urlRef.origin;
+            req.log.debug("Origin was not defined in the request, but referer is authorized.", toPlainObject(metadata));
             return next();
+        } else {
+            req.log.warning("Request origin and referer are unauthorized.", toPlainObject(metadata));
         }
+    } else {
+        metadata.origin = req.origin ? req.origin : null;
+        req.log.warning("Request origin unauthorized.", metadata);
     }
-    logger.warning("Request originated from unauthorized origin.", JSON.parse(req.toString()));
-    return res.send(403, {code: "Forbidden", message: 'Invalid origin'});
+    return res.send(403, {code: "Forbidden", message: 'Unauthorized client request.'});
 }
 
 /* [Might add this back later if rate-limits are needed.]
@@ -66,16 +96,20 @@ const throttleConfig = {
 };
 */
 
-const server = restify.createServer({
+const server = createServer({
+    ignoreTrailingSlash: true,
+    log: logger,
     name: 'pw-api-proxy',
-    version: '1.5.0'
+    noWriteContinue: true,
+    version: '1.5.0',
 });
 
 server.acceptable = ["application/json"]
 
+server.pre(setReqUUID);
 server.pre(originCheck);
 server.pre(cors.preflight);
-server.pre(restify.pre.dedupeSlashes())
+server.pre(dedupeSlashes())
 server.use(cors.actual);
 // server.use(throttle(throttleConfig));
 server.use(acceptParser(server.acceptable));
